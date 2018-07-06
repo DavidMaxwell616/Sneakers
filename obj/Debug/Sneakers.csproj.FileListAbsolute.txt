@@ -1,0 +1,5 @@
+c:\users\maxxd_000\documents\visual studio 2012\Projects\Sneakers\Sneakers\bin\Sneakers.dll
+c:\users\maxxd_000\documents\visual studio 2012\Projects\Sneakers\Sneakers\bin\Sneakers.pdb
+c:\users\maxxd_000\documents\visual studio 2012\Projects\Sneakers\Sneakers\obj\Debug\Sneakers.csprojResolveAssemblyReference.cache
+c:\users\maxxd_000\documents\visual studio 2012\Projects\Sneakers\Sneakers\obj\Debug\Sneakers.dll
+c:\users\maxxd_000\documents\visual studio 2012\Projects\Sneakers\Sneakers\obj\Debug\Sneakers.pdb
