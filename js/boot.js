@@ -35,7 +35,7 @@ var introTextSize = .01;
 var introText;
 var introText2;
 
-var laser;    // laser pulses
+var lasers = [];    // laser pulses
 var score = 0;
 var hscore = 0;
 var sneakers = [MAX_SNEAKERS];

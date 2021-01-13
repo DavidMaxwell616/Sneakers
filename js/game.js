@@ -1,29 +1,29 @@
-var game = new Phaser.Game(800,
-  600,
+var game = new Phaser.Game(640,
+  480,
   Phaser.AUTO,
   'phaser-example',
   { preload: preload, create: create, update: update });
 
-
+const width = game.width-50;
 
 function create() {
   game.physics.startSystem(Phaser.Physics.ARCADE);
 
   game.stage.backgroundColor = '#000000';
-  player = game.add.sprite(game.width / 2, game.height - 70, 'player');
+  player = game.add.sprite(width / 2, game.height - 70, 'player');
 
   var background = this.add.image(0, 0, 'background');
   background.width = this.game.width;
-  background.height = this.game.height;
+  background.height = this.game.height-6;
 
   var style = { font: "72px Arial", fill: '#ff0000', align: "center" };
-  introText = game.add.text(game.width / 2, game.height / 2, "SNEAKERS", style);
+  introText = game.add.text(width / 2, game.height / 2, "SNEAKERS", style);
   introText.anchor.set(0.5);
   var introTextString = "Move Right - Right Arrow \n" +
       "Move Left - Left Arrow \n" +
       "Fire - Space Bar \n" +
       "Press Any Key to Start";
-  introText2 = game.add.text(game.width / 2, game.height * .75, introTextString, {
+  introText2 = game.add.text(width / 2, game.height * .75, introTextString, {
       font: "24px Arial",
       fill: "#ff0000",
       align: "center"
@@ -31,7 +31,7 @@ function create() {
   introText2.anchor.set(0.5);
   introText2.visible = false;
 
-  infoText2 = game.add.text(game.width / 2, 20, "", {
+  infoText2 = game.add.text(width / 2, 20, "", {
       font: "18px Arial",
       fill: "#ff0000",
       align: "left"
@@ -39,7 +39,7 @@ function create() {
   infoText2.anchor.set(0.5);
   infoText2.visible = false;
 
-  infoText = game.add.text(game.width / 2, game.height / 2, "", {
+  infoText = game.add.text(width / 2, game.height / 2, "", {
       font: "32px Arial",
       fill: "#ff0000",
       align: "center"
@@ -61,7 +61,6 @@ function create() {
   rightKey = game.input.keyboard.addKey(Phaser.Keyboard.RIGHT);
   fireKey = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
   playKey = game.input.keyboard.addKey(Phaser.Keyboard.P);
-
 }
 
 function Init_Enemies() {
@@ -243,14 +242,6 @@ function Initialize_Enemy_Positions() {
 }
 
 function Init_Laser() {
-  // this function initializes and loads all the laser 
-  // weapon pulses
-
-  // now create and load each laser pulse
-  laser = game.add.sprite(game.width / 2, game.height - 10, 'laser');
-  laser.frame = 1;
-  // set state to off
-  laser.state = LASER_STATE_OFF;
   for (var pulse = 0; pulse < MAX_ENEMY_LASER; pulse++) {
       enemy_lasers[pulse] = game.add.sprite(game.width / 2, game.height - 10, 'enemy_laser');
       enemy_lasers[pulse].state = LASER_STATE_OFF;
@@ -276,12 +267,11 @@ function Init_Bursts() {
           introText.scale.y = introTextSize;
 
           if (introTextSize < 1)
-              introTextSize += .01;
+              introTextSize += .05;
           else {
               introText2.visible = true;
           }
-
-          if (fireKey.isDown) {
+           if (fireKey.isDown || game.input.activePointer.isDown) {
               introText.visible = false;
               introText2.visible = false;
               gameStart = true;
@@ -317,9 +307,9 @@ function Init_Bursts() {
 
 
                   // test if player is firing
-                  if (fireKey.isDown)
+                  if (fireKey.isDown || game.input.activePointer.isDown ){
                       Fire_Laser(player.x, player.y - 5, 16);
-
+                  }
 
                   // check of user is trying to exit
                   //if (KEY_DOWN(VK_ESCAPE))
@@ -369,18 +359,18 @@ function Init_Bursts() {
               if (player_state == PLAYER_STATE_DEAD && player_ships == 0) {
                   // player is dead
                   ready_state = 1;
-                  game.add.text(game.width / 2, game.height / 2, "G A M E    O V E R", {
+                  game.add.text(game.width *.3, game.height / 2, "G A M E    O V E R", {
                       font: "32px Arial",
                       fill: "#ff0000",
                       align: "center"
                   });
                   // draw text
-                  game.add.text(game.width / 2, (game.height / 2) + 20, "Hit Escape to Exit", {
+                  game.add.text(game.width *.3, (game.height / 2) + 50, "Hit Escape to Exit", {
                       font: "32px Arial",
                       fill: "#ff0000",
                       align: "center"
                   });
-                  game.add.text(game.width / 2, (game.height / 2) + 40, "Or P to Play Again", {
+                  game.add.text(game.width *.3, (game.height / 2) + 100, "Or P to Play Again", {
                       font: "32px Arial",
                       fill: "#ff0000",
                       align: "center"
@@ -536,273 +526,270 @@ function Init_Bursts() {
 
   } // end Collision_Test
 
+function TouchFire(){
+  if(!gameStart)
+  {
+    introText.visible = false;
+              introText2.visible = false;
+              gameStart = true;
+  }
+}
 
   function Move_Laser() {
       // this function moves all the laser pulses and checks for
       // collision with the enemies
+lasers.forEach(burst => {
+  if (burst.state == LASER_STATE_ON) {
+    // move the pulse upward
+    //Move_BOB(laser);
+    //laser.x += laser.xv;
+    burst.y += burst.yv;
+    // test for boundaries
+    if (burst.y < -50) {
+        // kill the pulse
+        burst.state = LASER_STATE_OFF;
 
-      if (laser.state == LASER_STATE_ON) {
-          // move the pulse upward
-          //Move_BOB(laser);
-          //laser.x += laser.xv;
-          laser.y += laser.yv;
-          // test for boundaries
-          if (laser.y < -50) {
-              // kill the pulse
-              laser.state = LASER_STATE_OFF;
+    } // end if
 
-          } // end if
+    // test for collision with enemies
 
-          // test for collision with enemies
+    //COLLISION WITH SNEAKERS
+    if (Level == 1) {
+        for (var enemy = 0; enemy < sneakers_active; enemy++) {
+            if (sneakers[enemy].state == ENEMY_STATE_ON) {
+                // test for collision 
+                if (Collision_Test(burst.x, burst.y,
+                                    burst.width, burst.height,
+                                    sneakers[enemy].x, sneakers[enemy].y,
+                                    sneakers[enemy].width, sneakers[enemy].height)) {
+                    // kill pulse
+                    burst.state = LASER_STATE_OFF;
 
-          //COLLISION WITH SNEAKERS
-          if (Level == 1) {
-              for (var enemy = 0; enemy < sneakers_active; enemy++) {
-                  if (sneakers[enemy].state == ENEMY_STATE_ON) {
-                      // test for collision 
-                      if (Collision_Test(laser.x, laser.y,
-                                          laser.width, laser.height,
-                                          sneakers[enemy].x, sneakers[enemy].y,
-                                          sneakers[enemy].width, sneakers[enemy].height)) {
-                          // kill pulse
-                          laser.state = LASER_STATE_OFF;
+                    sneakers[enemy].state = ENEMY_STATE_OFF;
 
-                          sneakers[enemy].state = ENEMY_STATE_OFF;
+                    Start_Burst(burst.x - 10, burst.y - 20,
+                                42, 36,
+                                sneakers[enemy].xv >> 1, sneakers[enemy].yv >> 1);
+                    sneakers[enemy].visible = false;
+                    burst.visible = false;
+                    // update score
+                    player_score += 10;
+                    sneaker_killed++;
+                } // end if collision
+            } // end if enemy alive
+        } // end for enemy
 
-                          Start_Burst(laser.x - 10, laser.y - 20,
-                                      42, 36,
-                                      sneakers[enemy].xv >> 1, sneakers[enemy].yv >> 1);
-                          sneakers[enemy].visible = false;
-                          laser.visible = false;
-                          // update score
-                          player_score += 10;
-                          sneaker_killed++;
-                      } // end if collision
-                  } // end if enemy alive
-              } // end for enemy
+    }
 
-          }
+    //COLLISION WITH CYCLOPS
+    if (Level == 2) {
+        for (var enemy = 0; enemy < cyclops_active; enemy++) {
+            if (cyclops[enemy].state == ENEMY_STATE_ON) {
+                // test for collision 
+                if (Collision_Test(burst.x, burst.y,
+                                    burst.width, burst.height,
+                                    cyclops[enemy].x, cyclops[enemy].y,
+                                    cyclops[enemy].width, cyclops[enemy].height)) {
+                    // kill pulse
+                    burst.state = LASER_STATE_OFF;
+                    burst.visible = false;
+                    cyclops[enemy].state = ENEMY_STATE_OFF;
 
-          //COLLISION WITH CYCLOPS
-          if (Level == 2) {
-              for (var enemy = 0; enemy < cyclops_active; enemy++) {
-                  if (cyclops[enemy].state == ENEMY_STATE_ON) {
-                      // test for collision 
-                      if (Collision_Test(laser.x, laser.y,
-                                          laser.width, laser.height,
-                                          cyclops[enemy].x, cyclops[enemy].y,
-                                          cyclops[enemy].width, cyclops[enemy].height)) {
-                          // kill pulse
-                          laser.state = LASER_STATE_OFF;
-                          laser.visible = false;
-                          cyclops[enemy].state = ENEMY_STATE_OFF;
+                    Start_Burst(burst.x - 10, burst.y - 20, 42, 36,
+                                cyclops[enemy].xv >> 1, cyclops[enemy].yv >> 1);
+                    cyclops[enemy].visible = false;
+                    // update score
+                    player_score += 80;
+                    cyclops_killed++;
+                } // end if collision
+            } // end if enemy alive
+        } // end for enemy
 
-                          Start_Burst(laser.x - 10, laser.y - 20, 42, 36,
-                                      cyclops[enemy].xv >> 1, cyclops[enemy].yv >> 1);
-                          cyclops[enemy].visible = false;
-                          // update score
-                          player_score += 80;
-                          cyclops_killed++;
-                      } // end if collision
-                  } // end if enemy alive
-              } // end for enemy
+    }
+    //COLLISION WITH SAUCERS
+    if (Level == 3) {
+        for (var enemy = 0; enemy < saucers_active; enemy++) {
+            if (saucers[enemy].state == ENEMY_STATE_ON) {
+                // test for collision 
+                if (Collision_Test(burst.x, burst.y,
+                                    burst.width, burst.height,
+                                    saucers[enemy].x, saucers[enemy].y,
+                                    saucers[enemy].width, saucers[enemy].height)) {
+                    // kill pulse
+                    burst.state = LASER_STATE_OFF;
+                    burst.visible = false;
 
-          }
-          //COLLISION WITH SAUCERS
-          if (Level == 3) {
-              for (var enemy = 0; enemy < saucers_active; enemy++) {
-                  if (saucers[enemy].state == ENEMY_STATE_ON) {
-                      // test for collision 
-                      if (Collision_Test(laser.x, laser.y,
-                                          laser.width, laser.height,
-                                          saucers[enemy].x, saucers[enemy].y,
-                                          saucers[enemy].width, saucers[enemy].height)) {
-                          // kill pulse
-                          laser.state = LASER_STATE_OFF;
-                          laser.visible = false;
+                    saucers[enemy].state = ENEMY_STATE_OFF;
+                    saucers[enemy].visible = false;
 
-                          saucers[enemy].state = ENEMY_STATE_OFF;
-                          saucers[enemy].visible = false;
+                    Start_Burst(burst.x - 10, burst.y - 20,
+                                42, 36,
+                                saucers[enemy].xv >> 1, saucers[enemy].yv >> 1);
+                    // update score
+                    player_score += 300;
+                    saucers_killed++;
+                } // end if collision
+            } // end if enemy alive
+        } // end for enemy
+    } // end if
 
-                          Start_Burst(laser.x - 10, laser.y - 20,
-                                      42, 36,
-                                      saucers[enemy].xv >> 1, saucers[enemy].yv >> 1);
-                          // update score
-                          player_score += 300;
-                          saucers_killed++;
-                      } // end if collision
-                  } // end if enemy alive
-              } // end for enemy
-          } // end if
+    //COLLISION WITH FANGS
 
-          //COLLISION WITH FANGS
+    if (Level == 4) {
+        for (var enemy = 0; enemy < fangs_active; enemy++) {
+            if (fangs[enemy].state == ENEMY_STATE_ON) {
+                // test for collision 
+                if (Collision_Test(fangs[enemy].x, fangs[enemy].y,
+                    fangs[enemy].width, fangs[enemy].height,
+                    burst.x, burst.y, burst.width, burst.height)) {
+                    // kill pulse
+                    burst.state = LASER_STATE_OFF;
+                    burst.visible = false;
 
-          if (Level == 4) {
-              for (var enemy = 0; enemy < fangs_active; enemy++) {
-                  if (fangs[enemy].state == ENEMY_STATE_ON) {
-                      // test for collision 
-                      if (Collision_Test(fangs[enemy].x, fangs[enemy].y,
-                          fangs[enemy].width, fangs[enemy].height,
-                          laser.x, laser.y, laser.width, laser.height)) {
-                          // kill pulse
-                          laser.state = LASER_STATE_OFF;
-                          laser.visible = false;
+                    fangs[enemy].state = ENEMY_STATE_OFF;
+                    fangs[enemy].visible = false;
 
-                          fangs[enemy].state = ENEMY_STATE_OFF;
-                          fangs[enemy].visible = false;
+                    Start_Burst(burst.x - 10, burst.y - 20, 42, 36,
+                                fangs[enemy].xv >> 1, fangs[enemy].yv >> 1);
 
-                          Start_Burst(laser.x - 10, laser.y - 20, 42, 36,
-                                      fangs[enemy].xv >> 1, fangs[enemy].yv >> 1);
-
-                          // update score
-                          player_score += 100;
-                          fangs_killed++;
-                      } // end if collision
-                  } // end if enemy alive
-              } // end for enemy
-
-
-          }
-      }
-
-      //COLLISION WITH HWINGS
-      if (Level == 5) {
-          for (var enemy = 0; enemy < hwings_active; enemy++) {
-              if (hwings[enemy].state == ENEMY_STATE_ON) {
-                  // test for collision 
-                  if (Collision_Test(laser.x, laser.y,
-                                      laser.width, laser.height,
-                                      hwings[enemy].x, hwings[enemy].y,
-                                      hwings[enemy].width, hwings[enemy].height)) {
-                      // kill pulse
-                      laser.state = LASER_STATE_OFF;
-                      laser.visible = false;
-
-                      hwings[enemy].state = ENEMY_STATE_OFF;
-                      hwings[enemy].visible = false;
-
-                      Start_Burst(laser.x - 10, laser.y - 20,
-                                  42, 36,
-                                  hwings[enemy].xv >> 1, hwings[enemy].yv >> 1);
-
-                      // update score
-                      player_score += 300;
-                      hwings_killed++;
-                  } // end if collision
-              } // end if enemy alive
-          } // end for enemy
-      } // end if
-
-      //COLLISION WITH METEORS
-      if (Level == 6) {
-          for (var enemy = 0; enemy < meteors_active; enemy++) {
-              if (meteors[enemy].state == ENEMY_STATE_ON) {
-                  // test for collision 
-                  if (Collision_Test(laser.x, laser.y,
-                                      laser.width, laser.height,
-                                      meteors[enemy].x, meteors[enemy].y,
-                                      meteors[enemy].width, meteors[enemy].height)) {
-                      // kill pulse
-                      laser.state = LASER_STATE_OFF;
-                      laser.visible = false;
-
-                      meteors[enemy].state = ENEMY_STATE_OFF;
-                      meteors[enemy].visible = false;
-
-                      Start_Burst(laser.x - 10, laser.y - 20,
-                                  42, 36,
-                                  meteors[enemy].xv >> 1, meteors[enemy].yv >> 1);
-
-                      // update score
-                      player_score += 300;
-                      meteors_killed++;
-                  } // end if collision
-              } // end if enemy alive
-          } // end for enemy
-      } // end if
+                    // update score
+                    player_score += 100;
+                    fangs_killed++;
+                } // end if collision
+            } // end if enemy alive
+        } // end for enemy
 
 
-      //COLLISION WITH SCRAMBLES
-      if (Level == 7) {
-          for (var enemy = 0; enemy < scrambles_active; enemy++) {
-              if (scrambles[enemy].state == ENEMY_STATE_ON) {
-                  // test for collision 
-                  if (Collision_Test(laser.x, laser.y,
-                                      laser.width, laser.height,
-                                      scrambles[enemy].x, scrambles[enemy].y,
-                                      scrambles[enemy].width, scrambles[enemy].height)) {
-                      // kill pulse
-                      laser.state = LASER_STATE_OFF;
-                      laser.visible = false;
+    }
+}
 
-                      scrambles[enemy].state = SCRAMBLE_STATE_RETREATING;
-                      scrambles[enemy].frame += 3;
-                      // update score
-                      player_score += 300;
-                  } // end if collision
-              } // end if enemy alive
-          } // end for enemy
-      } // end if
+//COLLISION WITH HWINGS
+if (Level == 5) {
+    for (var enemy = 0; enemy < hwings_active; enemy++) {
+        if (hwings[enemy].state == ENEMY_STATE_ON) {
+            // test for collision 
+            if (Collision_Test(burst.x, burst.y,
+                                burst.width, burst.height,
+                                hwings[enemy].x, hwings[enemy].y,
+                                hwings[enemy].width, hwings[enemy].height)) {
+                // kill pulse
+                burst.state = LASER_STATE_OFF;
+                burst.visible = false;
 
-      //MOVE ENEMY LASER
-      for (var index = 0; index < enemy_laser_active; index++) {
-          if (enemy_lasers[index].state == ENEMY_LASER_STATE_ON) {
-              // move the pulse downward
-              //Move_Laser(enemy_lasers[index]);
-              enemy_lasers[index].y += enemy_lasers[index].yv;
-              // test for boundaries
-              if (enemy_lasers[index].y > player.y) {
-                  // kill the pulse
-                  enemy_lasers[index].state = ENEMY_LASER_STATE_OFF;
-                  enemy_lasers[index].visible = false;
-              } // end if
+                hwings[enemy].state = ENEMY_STATE_OFF;
+                hwings[enemy].visible = false;
 
-              // test for collision with player
-              if (Collision_Test(enemy_lasers[index].x, enemy_lasers[index].y,
-                  enemy_lasers[index].width, enemy_lasers[index].height,
-                  player.x, player.y, player.width, player.height) && player_state == PLAYER_STATE_ALIVE) {
-                  Start_Burst(enemy_lasers[index].x, enemy_lasers[index].y,
-                            68 + game.rnd.integerInRange(1,12), 54 + game.rnd.integerInRange(1,10),
-                          enemy_lasers[index].xv >> 1, enemy_lasers[index].yv >> 1);
+                Start_Burst(burst.x - 10, burst.y - 20,
+                            42, 36,
+                            hwings[enemy].xv >> 1, hwings[enemy].yv >> 1);
 
-                  // update players damage
-                  player_damage += 100;
+                // update score
+                player_score += 300;
+                hwings_killed++;
+            } // end if collision
+        } // end if enemy alive
+    } // end for enemy
+} // end if
+
+//COLLISION WITH METEORS
+if (Level == 6) {
+    for (var enemy = 0; enemy < meteors_active; enemy++) {
+        if (meteors[enemy].state == ENEMY_STATE_ON) {
+            // test for collision 
+            if (Collision_Test(burst.x, burst.y,
+                                burst.width, burst.height,
+                                meteors[enemy].x, meteors[enemy].y,
+                                meteors[enemy].width, meteors[enemy].height)) {
+                // kill pulse
+                burst.state = LASER_STATE_OFF;
+                burst.visible = false;
+
+                meteors[enemy].state = ENEMY_STATE_OFF;
+                meteors[enemy].visible = false;
+
+                Start_Burst(burst.x - 10, burst.y - 20,
+                            42, 36,
+                            meteors[enemy].xv >> 1, meteors[enemy].yv >> 1);
+
+                // update score
+                player_score += 300;
+                meteors_killed++;
+            } // end if collision
+        } // end if enemy alive
+    } // end for enemy
+} // end if
 
 
-                  // kill the original
-                  enemy_lasers[index].state = ENEMY_LASER_STATE_OFF;
-                  enemy_lasers[index].visible = false;
+//COLLISION WITH SCRAMBLES
+if (Level == 7) {
+    for (var enemy = 0; enemy < scrambles_active; enemy++) {
+        if (scrambles[enemy].state == ENEMY_STATE_ON) {
+            // test for collision 
+            if (Collision_Test(burst.x, burst.y,
+                                burst.width, burst.height,
+                                scrambles[enemy].x, scrambles[enemy].y,
+                                scrambles[enemy].width, scrambles[enemy].height)) {
+                // kill pulse
+                burst.state = LASER_STATE_OFF;
+                burst.visible = false;
 
-              } // end if collision
+                scrambles[enemy].state = SCRAMBLE_STATE_RETREATING;
+                scrambles[enemy].frame += 3;
+                // update score
+                player_score += 300;
+            } // end if collision
+        } // end if enemy alive
+    } // end for enemy
+} // end if
 
-          } // end if
-      }
+//MOVE ENEMY LASER
+for (var index = 0; index < enemy_laser_active; index++) {
+    if (enemy_lasers[index].state == ENEMY_LASER_STATE_ON) {
+        // move the pulse downward
+        //Move_Laser(enemy_lasers[index]);
+        enemy_lasers[index].y += enemy_lasers[index].yv;
+        // test for boundaries
+        if (enemy_lasers[index].y > player.y) {
+            // kill the pulse
+            enemy_lasers[index].state = ENEMY_LASER_STATE_OFF;
+            enemy_lasers[index].visible = false;
+        } // end if
+
+        // test for collision with player
+        if (Collision_Test(enemy_lasers[index].x, enemy_lasers[index].y,
+            enemy_lasers[index].width, enemy_lasers[index].height,
+            player.x, player.y, player.width, player.height) && player_state == PLAYER_STATE_ALIVE) {
+            Start_Burst(enemy_lasers[index].x, enemy_lasers[index].y,
+                      68 + game.rnd.integerInRange(1,12), 54 + game.rnd.integerInRange(1,10),
+                    enemy_lasers[index].xv >> 1, enemy_lasers[index].yv >> 1);
+
+            // update players damage
+            player_damage += 100;
+
+
+            // kill the original
+            enemy_lasers[index].state = ENEMY_LASER_STATE_OFF;
+            enemy_lasers[index].visible = false;
+
+        } // end if collision
+
+    } // end if
+}
+
+});
   } // end Move_Laser
 
   //////////////////////////////////////////////////////////
 
 
   function Fire_Laser(x, y, vel) {
-      // this function fires a laser pulse at the given starting
-      // position and velocity, of course, one must be free for 
-      // this to work
-      // test if laser pulse is in flight
-      if (laser.state == LASER_STATE_OFF) {
-          // start this one up
-          laser.x = x;
-          laser.y = y;
-          laser.yv = -vel;
-          laser.state = LASER_STATE_ON;
-          laser.visible = true;
-          // later
-          return;
-
-      } // end if
-
+var laser = game.add.sprite(x, y, 'laser');
+laser.state= LASER_STATE_ON;
+laser.yv = -vel;
+laser.visible = true;
+lasers.push(laser);
 
   } // end Fire_Laser
-
-  ///////////////////////////////////////////////////////////
 
   function Fire_Enemy_Laser(x, y, vel) {
       // this function fires a laser pulse at the given starting
@@ -890,11 +877,14 @@ function Init_Bursts() {
               if (cyclops[index].state == ENEMY_STATE_ON) {
                   if (cyclops[index].x > game.width - 100) cyclops[index].x = 10;
                   if (cyclops[index].y > player.y) cyclops[index].y = 10;
-                  if (laser.state == LASER_STATE_ON) {
+                  lasers.forEach(laser => {
+                    if (laser.state == LASER_STATE_ON) {
                       cyclops[index].xv = 5 + attack_speed;
-                  cyclops[index].y += attack_speed;
-                  }
-                  else
+                      cyclops[index].y += attack_speed;
+                    }
+                  });
+               }
+                 else
                       cyclops[index].xv = attack_speed;
                   // move the enemy
 
@@ -1100,7 +1090,7 @@ function Init_Bursts() {
           }
       }//Level7
 
-  } // end Move_enemies
+  // end Move_enemies
 
   ///////////////////////////////////////////////////////////
 
