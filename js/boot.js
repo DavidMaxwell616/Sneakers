@@ -80,4 +80,7 @@ var levelText;
 var livesText;
 var leftButton;
 var rightButton;
-var moving = false;
+var gameOver = false;
+var gameOverText;
+var gameOverText2;
+var gameOverText3;

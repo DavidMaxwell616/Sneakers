@@ -365,21 +365,22 @@ function Init_Bursts() {
               } // end if
 
               //GAME OVER ?
-              if (player_state == PLAYER_STATE_DEAD && player_ships == 0) {
+              if (player_state == PLAYER_STATE_DEAD && player_ships == 0 && !gameOver) {
                   // player is dead
+                  gameOver = true
                   ready_state = 1;
-                  game.add.text(game.width *.3, game.height / 2, "G A M E    O V E R", {
+                  gameOverText = game.add.text(game.width *.3, game.height / 2, "G A M E    O V E R", {
                       font: "32px Arial",
                       fill: "#ff0000",
                       align: "center"
                   });
                   // draw text
-                  game.add.text(game.width *.3, (game.height / 2) + 50, "Hit Escape to Exit", {
+                  gameOverText2 = game.add.text(game.width *.3, (game.height / 2) + 50, "Hit Escape to Exit", {
                       font: "32px Arial",
                       fill: "#ff0000",
                       align: "center"
                   });
-                  game.add.text(game.width *.3, (game.height / 2) + 100, "Or P to Play Again", {
+                  gameOverText3 = game.add.text(game.width *.3, (game.height / 2) + 100, "Or P to Play Again", {
                       font: "32px Arial",
                       fill: "#ff0000",
                       align: "center"
@@ -473,6 +474,8 @@ function Init_Bursts() {
 
               // check of user is trying to start over
               if (playKey.isDown && ready_state == 1 && player_ships == 0) {
+                gameOver = false;player.xv=0;
+                gameOverText.destroy(); gameOverText2.destroy(); gameOverText3.destroy(); 
                   Level = 1; attack_speed = 5; showintro = 0; levelGroup = 0;
                   sneaker_killed = 0; cyclops_killed = 0; saucers_killed = 0;
                   fangs_killed = 0; hwings_killed = 0; meteors_killed = 0;
