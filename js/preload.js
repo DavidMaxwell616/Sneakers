@@ -9,7 +9,7 @@ function preload() {
   game.load.spritesheet('hwings', 'assets/images/hwings.png', 41, 37);
   game.load.spritesheet('meteors', 'assets/images/meteors.png', 56, 58);
   game.load.spritesheet('scrambles', 'assets/images/scrambles.png',50,50);
-  game.load.spritesheet('burst', 'assets/images/burst.png', 40, 42);
+  game.load.spritesheet('burst', 'assets/images/burst.png', 40, 43);
   game.load.image('laser', 'assets/images/laser.png');
   game.load.image('enemy_laser', 'assets/images/enemy_laser.png');
   game.load.image('background', 'assets/images/background.png');

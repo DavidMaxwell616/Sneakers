@@ -8,22 +8,21 @@ const width = game.width-50;
 
 function create() {
   game.physics.startSystem(Phaser.Physics.ARCADE);
-
   game.stage.backgroundColor = '#000000';
   player = game.add.sprite(width / 2, game.height - 70, 'player');
-
+player.xv = 0;
   var background = this.add.image(0, 0, 'background');
   background.width = this.game.width;
   background.height = this.game.height-6;
 
   var style = { font: "72px Arial", fill: '#ff0000', align: "center" };
-  introText = game.add.text(width / 2, game.height / 2, "SNEAKERS", style);
+  introText = game.add.text(width / 2, game.height / 3, "SNEAKERS", style);
   introText.anchor.set(0.5);
   var introTextString = "Move Right - Right Arrow \n" +
       "Move Left - Left Arrow \n" +
       "Fire - Space Bar \n" +
       "Press Any Key to Start";
-  introText2 = game.add.text(width / 2, game.height * .75, introTextString, {
+  introText2 = game.add.text(width / 2, game.height /1.75, introTextString, {
       font: "24px Arial",
       fill: "#ff0000",
       align: "center"
@@ -31,14 +30,7 @@ function create() {
   introText2.anchor.set(0.5);
   introText2.visible = false;
 
-  infoText2 = game.add.text(width / 2, 20, "", {
-      font: "18px Arial",
-      fill: "#ff0000",
-      align: "left"
-  });
-  infoText2.anchor.set(0.5);
-  infoText2.visible = false;
-
+  
   infoText = game.add.text(width / 2, game.height / 2, "", {
       font: "32px Arial",
       fill: "#ff0000",
@@ -56,11 +48,27 @@ function create() {
 
   // init all the explosions
   Init_Bursts();
-
+  leftArrow = game.add.button(55, game.world.height+15, 'scrambles', leftClick, this, 2, 1, 0);
+  leftArrow.frame = 2;
+  leftArrow.angle=-90;
+  rightArrow = game.add.button(55, game.world.height-35, 'scrambles', rightClick, this, 2, 1, 0);
+  rightArrow.frame = 2;
+  rightArrow.angle=-270;
   leftKey = game.input.keyboard.addKey(Phaser.Keyboard.LEFT);
   rightKey = game.input.keyboard.addKey(Phaser.Keyboard.RIGHT);
   fireKey = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
   playKey = game.input.keyboard.addKey(Phaser.Keyboard.P);
+  game.input.onDown.add(Fire, this);
+  Draw_Info();
+}
+
+function leftClick(){
+  player.xv = 8;
+}
+
+function rightClick(){
+  player.xv = -8;
+
 }
 
 function Init_Enemies() {
@@ -251,7 +259,6 @@ function Init_Laser() {
 function Init_Bursts() {
   // this function initializes and loads all the bursts 
 
-  // create the first burst bob
   for (var burst = 0; burst < MAX_BURSTS; burst++) {
           bursts[burst] = game.add.sprite(game.width / 2, game.height - 10, 'burst');
           var anim = bursts[burst].animations.add('burst');
@@ -261,7 +268,7 @@ function Init_Bursts() {
   } // end Init_Bursts
 
   function update() {
-      if (!gameStart) {
+    if (!gameStart) {
 
           introText.scale.x = introTextSize;
           introText.scale.y = introTextSize;
@@ -271,7 +278,7 @@ function Init_Bursts() {
           else {
               introText2.visible = true;
           }
-           if (fireKey.isDown || game.input.activePointer.isDown) {
+           if (fireKey.isDown) {
               introText.visible = false;
               introText2.visible = false;
               gameStart = true;
@@ -295,19 +302,20 @@ function Init_Bursts() {
                   // test if player is moving
                   if (rightKey.isDown) {
                       // move player to right
-                      player.x += 8;
+                      player.xv = 8;
 
                   } // end if
                   else
                       if (leftKey.isDown) {
                           // move player to left
-                          player.x -= 8;
+                          player.xv = -8;
 
                       } // end if
 
+                  player.x+=player.xv;
 
                   // test if player is firing
-                  if (fireKey.isDown || game.input.activePointer.isDown ){
+                  if (fireKey.isDown ){
                       Fire_Laser(player.x, player.y - 5, 16);
                   }
 
@@ -326,6 +334,7 @@ function Init_Bursts() {
                   // test for dying state transition
                   if (player_damage >= 100) {
                       // kill player
+                      player.visible = false;
                       player_state = PLAYER_STATE_DEAD;
                       player_ships--;
                       // set counter to 0
@@ -351,7 +360,7 @@ function Init_Bursts() {
                       // set position
                       player_damage = 0;
                       // stop the intro if not already
-
+                      player.visible = true;
                   } // end if
               } // end if
 
@@ -483,14 +492,23 @@ function Init_Bursts() {
               Move_Laser();
 
               Move_Enemies();
-
-              // for (i = 0; i < MAX_SNEAKERS; i++)
-              // draw the score and ships left
-              Draw_Info();
-          }
+              
+              Update_Info();
+           }
       }
   }
-
+function Fire(){
+  if(!gameStart){
+  introText.visible = false;
+  introText2.visible = false;
+  gameStart = true;
+}
+else{
+  var y = game.input.activePointer.position.y;
+  if(y<game.height-20)
+  Fire_Laser(player.x, player.y - 5, 16);
+}
+}
   function burst_finished(sprite, animation) {
       sprite.state = BURST_STATE_OFF;
   }
@@ -538,7 +556,7 @@ function TouchFire(){
   function Move_Laser() {
       // this function moves all the laser pulses and checks for
       // collision with the enemies
-lasers.forEach(burst => {
+  lasers.forEach(burst => {
   if (burst.state == LASER_STATE_ON) {
     // move the pulse upward
     //Move_BOB(laser);
@@ -575,9 +593,9 @@ lasers.forEach(burst => {
                     // update score
                     player_score += 10;
                     sneaker_killed++;
-                } // end if collision
-            } // end if enemy alive
-        } // end for enemy
+                } 
+            } 
+        } 
 
     }
 
@@ -601,9 +619,9 @@ lasers.forEach(burst => {
                     // update score
                     player_score += 80;
                     cyclops_killed++;
-                } // end if collision
-            } // end if enemy alive
-        } // end for enemy
+                } 
+            } 
+        } 
 
     }
     //COLLISION WITH SAUCERS
@@ -628,10 +646,10 @@ lasers.forEach(burst => {
                     // update score
                     player_score += 300;
                     saucers_killed++;
-                } // end if collision
-            } // end if enemy alive
-        } // end for enemy
-    } // end if
+                } 
+            } 
+        } 
+    } 
 
     //COLLISION WITH FANGS
 
@@ -655,9 +673,9 @@ lasers.forEach(burst => {
                     // update score
                     player_score += 100;
                     fangs_killed++;
-                } // end if collision
-            } // end if enemy alive
-        } // end for enemy
+                } 
+            } 
+        } 
 
 
     }
@@ -686,9 +704,9 @@ if (Level == 5) {
                 // update score
                 player_score += 300;
                 hwings_killed++;
-            } // end if collision
-        } // end if enemy alive
-    } // end for enemy
+            } 
+        } 
+    } 
 } // end if
 
 //COLLISION WITH METEORS
@@ -714,10 +732,10 @@ if (Level == 6) {
                 // update score
                 player_score += 300;
                 meteors_killed++;
-            } // end if collision
-        } // end if enemy alive
-    } // end for enemy
-} // end if
+            } 
+        } 
+    } 
+} 
 
 
 //COLLISION WITH SCRAMBLES
@@ -737,10 +755,10 @@ if (Level == 7) {
                 scrambles[enemy].frame += 3;
                 // update score
                 player_score += 300;
-            } // end if collision
-        } // end if enemy alive
-    } // end for enemy
-} // end if
+            } 
+        } 
+    } 
+}
 
 //MOVE ENEMY LASER
 for (var index = 0; index < enemy_laser_active; index++) {
@@ -777,10 +795,8 @@ for (var index = 0; index < enemy_laser_active; index++) {
 }
 
 });
-  } // end Move_Laser
 
-  //////////////////////////////////////////////////////////
-
+}
 
   function Fire_Laser(x, y, vel) {
 var laser = game.add.sprite(x, y, 'laser');
@@ -811,10 +827,7 @@ lasers.push(laser);
           } // end if
 
 
-  } // end Fire_Laser
-
-  ///////////////////////////////////////////////////////////
-
+  } 
 
   function Move_Enemies() {
       // this function moves all the enemies pulses and checks for
@@ -1088,16 +1101,7 @@ lasers.push(laser);
               } // end for index
 
           }
-      }//Level7
-
-  // end Move_enemies
-
-  ///////////////////////////////////////////////////////////
-
-
-
-  ///////////////////////////////////////////////////////////
-
+      }
 
   function Start_Burst(x, y, width, height, xv, yv) {
       // this function starts a burst up
@@ -1123,13 +1127,12 @@ lasers.push(laser);
               // later
               return;
 
-          } // end if
-
-      } // end for index
-
-  } // end Start_Burst
-
-  ///////////////////////////////////////////////////////////
+          } 
+          
+      } 
+      
+  } 
+  
   function pad(num, size) {
       var s = num + "";
       while (s.length < size) s = "0" + s;
@@ -1137,29 +1140,40 @@ lasers.push(laser);
   }
 
   function Draw_Info() {
-      // this function draws all the information at the top of the screen
-      // build up score string
-      infoText2.visible = true;
-      var scoreText = pad(player_score, 10);
-      var info = "SCORE: " + scoreText + '     ';
+    var format={
+      font: "18px Arial",
+      fill: "#ff0000",
+      align: "left"
+  };
+      var score = "SCORE: " + player_score;
+      var hiscore = "HIGH SCORE: " + highscore;
+      var level  = "LEVEL: " + (Level + levelGroup) ;
+      var lives = "SHIPS: " + player_ships;
+      scoreText = game.add.text(width *.05, 20, score, format);      
+      hiscoreText = game.add.text(width *.25, 20, hiscore, format);
+      levelText = game.add.text(width *.55, 20, level, format);
+      livesText = game.add.text(width *.75, 20, lives, format);
 
-      scoreText = (pad(highscore, 10));
-      info += "HIGH SCORE: " + scoreText + '     ';
+  
+  } 
 
-      // Level
-      info += "LEVEL: " + (Level + levelGroup) +'     ';
-
-      // draw ships
-      info += "SHIPS: " + player_ships;
-      infoText2.setText(info);
-
-  } // end Draw_Info
-
-  ///////////////////////////////////////////////////////////
+  function Update_Info(){
+    var format={
+      font: "18px Arial",
+      fill: "#ff0000",
+      align: "left"
+  };
+      var score = "SCORE: " + player_score;
+      var hiscore = "HIGH SCORE: " + highscore;
+      var level  = "LEVEL: " + (Level + levelGroup) ;
+      var lives = "SHIPS: " + player_ships;
+      scoreText.setText(score);      
+      hiscoreText.setText(hiscore);
+      levelText.setText(level);
+      livesText.setText(lives);
+  }
 
   function Do_Intro() {
-      // the world's simplest intro
-
       var info = "LEVEL: " + (Level+levelGroup) + '\n';
       switch (Level) {
           case 1:
@@ -1186,7 +1200,6 @@ lasers.push(laser);
       }
       infoText.setText(info);
       infoText.visible = showintro < 59;
-      //Sleep(2000);
-  } // end Do_Intro
+  }
 
 
