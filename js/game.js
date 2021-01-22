@@ -11,6 +11,7 @@ function create() {
   game.stage.backgroundColor = '#000000';
   player = game.add.sprite(width / 2, game.height - 70, 'player');
   player.xv = 0;
+  player.state = ALIVE;
   var background = this.add.image(0, 0, 'background');
   background.width = this.game.width;
   background.height = this.game.height-6;
@@ -300,7 +301,6 @@ function Init_Bursts() {
                   // player is dead
                   if (game.rnd.integerInRange(1,4) == 1 && player.counter < 60)
                       Start_Burst(player.x - 16 + game.rnd.integerInRange(1,40), player.y - 5 + game.rnd.integerInRange(1,8),
-                                  player.width, player.height,
                                   -4 + game.rnd.integerInRange(1,8), 2 + game.rnd.integerInRange(1,4));
 
                   if (++player.counter > 60 && lives > 0) {
@@ -415,7 +415,13 @@ function Init_Bursts() {
 
               if (player_score > highscore) highscore = player_score;
 
-              Move_Laser();
+              if(isFiring){
+                laser.y += laser.yv;
+                  if (laser.y < -50) {
+                    isFiring = false;
+                      laser.destroy();
+                  }
+                }
 
               Move_Enemies();
               
@@ -440,10 +446,16 @@ else{
       sprite.destroy();
   }
 
-  function Collision_Test(x1, y1, w1, h1,
-                      x2, y2, w2, h2) {
+  function Collision_Test(bodyA, bodyB) {
       // this function tests if the two rects overlap
-
+      var x1 = bodyA.x;
+      var y1 = bodyA.y;
+      var w1 = bodyA.width;
+      var h1 = bodyA.height;
+      var x2 = bodyB.x;
+      var y2 = bodyB.y;
+      var w2 = bodyB.width;
+      var h2 = bodyB.height;
       // get the radi of each rect
       var width1 = (w1 >> 1) - (w1 >> 3);
       var height1 = (h1 >> 1) - (h1 >> 3);
@@ -483,12 +495,8 @@ function TouchFire(){
 function HandleCollision(bodyA, bodyB)
 {
   // test for collision 
-    if (Collision_Test(bodyA.x, bodyA.y,
-      bodyA.width, bodyA.height,
-      bodyB.x, bodyB.y,
-      bodyB.width, bodyB.height)) {
-
-  Start_Burst(bodyA.x - 10, bodyA.y - 20, 42, 36,
+    if (Collision_Test(bodyA, bodyB)) {
+  Start_Burst(bodyA.x - 10, bodyA.y - 20, 
     bodyB.xv >> 1, bodyB.yv >> 1);
 
     bodyA.destroy();
@@ -499,17 +507,8 @@ function HandleCollision(bodyA, bodyB)
 }
 
 
-  function Move_Laser() {
-  lasers.forEach(burst => {
-    burst.y += burst.yv;
-    if (burst.y < -50) {
-      isFiring = false;
-        burst.destroy();
+ 
 
-    }
-  });
-}
-  
 //COLLISIONS
 
 switch (Level) {
@@ -569,11 +568,8 @@ enemy_lasers.forEach(enemy_laser => {
         } 
       
         // test for collision with player
-        if (Collision_Test(enemy_laser.x, enemy_laser.y,
-            enemy_laser.width, enemy_laser.height,
-            player.x, player.y, player.width, player.height) && player.state == ALIVE) {
+        if (Collision_Test(enemy_laser, player) && player.state == ALIVE) {
             Start_Burst(enemy_laser.x, enemy_laser.y,
-                      68 + game.rnd.integerInRange(1,12), 54 + game.rnd.integerInRange(1,10),
                     enemy_laser.xv >> 1, enemy_laser.yv >> 1);
 
             // update players damage
@@ -590,11 +586,9 @@ enemy_lasers.forEach(enemy_laser => {
 
 
   function Fire_Laser(x, y, vel) {
-var laser = game.add.sprite(x, y, 'laser');
-laser.yv = -vel;
-laser.visible = true;
-lasers.push(laser);
-
+    laser = game.add.sprite(x, y, 'laser');
+    laser.yv = -vel;
+    isFiring = true;
   } 
 
   function Fire_Enemy_Laser(x, y, vel) {
@@ -629,12 +623,8 @@ switch (Level) {
     sneaker.x += sneaker.xv;
     sneaker.y += sneaker.yv;
       // test for collision with enemies
-    if (Collision_Test(player.x, player.y,
-        player.width, player.height,
-        sneaker.x, sneaker.y,
-        sneaker.width, sneaker.height) && player.state == ALIVE) {
+    if (Collision_Test(player, sneaker) && player.state == ALIVE) {
         Start_Burst(sneaker.x, sneaker.y,
-        68 + game.rnd.integerInRange(1,12), 54 + game.rnd.integerInRange(1,10),
         sneaker.xv >> 1, sneaker.yv >> 1);
           // update players damage
           player.damage += 100;
@@ -649,24 +639,18 @@ switch (Level) {
       cyclops.forEach(cyclop => {
           if (cyclop.x > game.width - 100) cyclop.x = 10;
             if (cyclop.y > player.y) cyclop.y = 10;
-            lasers.forEach(laser => {
-              if (laser) {
+              if (isFiring) {
                 cyclop.xv = 5 + attack_speed;
                 cyclop.y += attack_speed;
               }
                  else
                 cyclop.xv = attack_speed;
-              });
 
             cyclop.x += cyclop.xv;
 
             // test for collision with enemies
-            if (Collision_Test(player.x, player.y,
-                            player.width, player.height,
-                            cyclop.x, cyclop.y,
-                            cyclop.width, cyclop.height)) {
+            if (Collision_Test(player, cyclop)) {
                 Start_Burst(cyclop.x, cyclop.y,
-                            68 + game.rnd.integerInRange(1,12), 54 + game.rnd.integerInRange(1,10),
                             cyclop.xv >> 1, cyclop.yv >> 1);
                 // update players damage
                 player.damage += 100;
@@ -708,12 +692,8 @@ switch (Level) {
                   Fire_Enemy_Laser(fang.x, fang.y, attack_speed + 5);
 
               // test for collision with enemies
-              if (Collision_Test(player.x, player.y,
-                              player.width, player.height,
-                              fang.x, fang.y,
-                              fang.width, fang.height) && player.state == ALIVE) {
+              if (Collision_Test(player, fang) && player.state == ALIVE) {
                   Start_Burst(fang.x, fang.y,
-                              68 + game.rnd.integerInRange(1,12), 54 + game.rnd.integerInRange(1,10),
                               fang.xv >> 1, fang.yv >> 1);
 
                   // update players damage
@@ -734,12 +714,8 @@ switch (Level) {
 
 
         // test for collision with enemies
-        if (Collision_Test(hwing.x, hwing.y,
-                            hwing.width, hwing.height,
-                            player.x, player.y,
-                        player.width, player.height) && player_state == PLAYER_STATE_ALIVE) {
+        if (Collision_Test(player, hwing) && player.state == ALIVE) {
             Start_Burst(hwing.x, hwing.y,
-                        68 + game.rnd.integerInRange(1,12), 54 + game.rnd.integerInRange(1,10),
                         hwing.xv >> 1, hwing.yv >> 1);
 
             // update players damage
@@ -764,13 +740,9 @@ switch (Level) {
             meteor.y += meteor.yv;
 
             // test for collision with enemies
-            if (Collision_Test(meteor.x, meteor.y,
-                                meteor.width, meteor.height,
-                                player.x, player.y,
-                            player.width, player.height) && player.state == ALIVE) {
+            if (Collision_Test(player, meteor) && player.state == ALIVE) {
                 Start_Burst(meteor.x, meteor.y,
-                            68 + game.rnd.integerInRange(1,12), 54 + game.rnd.integerInRange(1,10),
-                            meteor.xv >> 1, meteor.yv >> 1);
+                              meteor.xv >> 1, meteor.yv >> 1);
 
                 // update players damage
                 player.damage += 100;
@@ -791,13 +763,9 @@ switch (Level) {
             scramble.y += scramble.yv;
 
             // test for collision with enemies
-            if (Collision_Test(scramble.x, scramble.y,
-                                scramble.width, scramble.height,
-                                player.x, player.y,
-                            player.width, player.height)) {
+            if (Collision_Test(player, scramble)) {
                 Start_Burst(scramble.x, scramble.y,
-                            68 + game.rnd.integerInRange(1,12), 54 + game.rnd.integerInRange(1,10),
-                            scramble.xv >> 1, scramble.yv >> 1);
+                             scramble.xv >> 1, scramble.yv >> 1);
 
                 // update players damage
                 player.damage += 100;
@@ -831,12 +799,15 @@ switch (Level) {
   }
  
     
-  function Start_Burst(x, y, width, height, xv, yv) {
+  function Start_Burst(x, y, xv, yv) {
     bursts.forEach(burst => {
               burst.curr_frame = 0;
+              burst.width = 68 + game.rnd.integerInRange(1,12);
+              burst.height = 54 + game.rnd.integerInRange(1,10);
               burst.x = x;
               burst.y = y;
-              burst.state = BURST_STATE_ON;
+              burst.xv = xv;
+              burst.yv = yv;
               burst.animations.play('burst', false);
               return;
           }); 
@@ -873,11 +844,11 @@ switch (Level) {
       var score = "SCORE: " + player_score;
       var hiscore = "HIGH SCORE: " + highscore;
       var level  = "LEVEL: " + (Level + levelGroup) ;
-      var lives = "SHIPS: " + lives;
+      var men = "SHIPS: " + lives;
       scoreText.setText(score);      
       hiscoreText.setText(hiscore);
       levelText.setText(level);
-      livesText.setText(lives);
+      livesText.setText(men);
   }
 
   function Do_Intro() {

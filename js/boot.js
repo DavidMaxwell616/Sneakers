@@ -12,7 +12,6 @@ var introTextSize = .01;
 var introText;
 var introText2;
 
-var lasers = [];    // laser pulses
 var score = 0;
 var hscore = 0;
 var sneakers = [];
@@ -23,6 +22,7 @@ var meteors = [];
 var saucers = [];
 var scrambles = [];
 var enemy_lasers = [];
+var laser;
 
 var showintro = 0;
 var bursts = [];    // the explosion bursts
