@@ -296,8 +296,7 @@ function Init_Bursts() {
                   } 
 
               } 
-
-              if (player.state == DEAD) {
+              else {
                   // player is dead
                   if (game.rnd.integerInRange(1,4) == 1 && player.counter < 60)
                       Start_Burst(player.x - 16 + game.rnd.integerInRange(1,40), player.y - 5 + game.rnd.integerInRange(1,8),
@@ -509,7 +508,8 @@ function HandleCollision(bodyA, bodyB)
 
     }
   });
-    
+}
+  
 //COLLISIONS
 
 switch (Level) {
@@ -558,7 +558,7 @@ switch (Level) {
 }
 
 //MOVE ENEMY LASER
-for (var index = 0; index < enemy_lasers.length; index++) {
+enemy_lasers.forEach(enemy_laser => {
         // move the pulse downward
         //Move_Laser(enemy_laser);
         enemy_laser.y += enemy_laser.yv;
@@ -585,8 +585,8 @@ for (var index = 0; index < enemy_lasers.length; index++) {
 
         } 
 
-    } 
-  }
+  
+});
 
 
   function Fire_Laser(x, y, vel) {
@@ -857,11 +857,11 @@ switch (Level) {
       var score = "SCORE: " + player_score;
       var hiscore = "HIGH SCORE: " + highscore;
       var level  = "LEVEL: " + (Level + levelGroup) ;
-      var lives = "SHIPS: " + lives;
+      var men = "SHIPS: " + lives;
       scoreText = game.add.text(width *.05, 20, score, format);      
       hiscoreText = game.add.text(width *.25, 20, hiscore, format);
       levelText = game.add.text(width *.55, 20, level, format);
-      livesText = game.add.text(width *.75, 20, lives, format);
+      livesText = game.add.text(width *.75, 20, men, format);
   } 
 
   function Update_Info(){
