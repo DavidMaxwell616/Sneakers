@@ -3,7 +3,7 @@ function preload() {
   //  There are 18 frames in the PNG - you can leave this value blank if the frames fill up the entire PNG, but in this case there are some
   //  blank frames at the end, so we tell the loader how many to load
   game.load.spritesheet('sneakers', 'assets/images/sneakers.png', 47, 47);
-  game.load.spritesheet('cyclops', 'assets/images/cyclops.png', 50, 34);
+  game.load.spritesheet('cyclops', 'assets/images/cyclops.png', 50, 25);
   game.load.spritesheet('saucers', 'assets/images/saucers.png', 50, 25);
   game.load.spritesheet('fangs', 'assets/images/fangs.png', 44, 28);
   game.load.spritesheet('hwings', 'assets/images/hwings.png', 41, 37);
