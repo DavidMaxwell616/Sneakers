@@ -40,7 +40,6 @@ var sneakers_active = 5,
 
 var fangmovex=0; 
 fangmovey=0;
-// player state variables
 var player_score = 0;  // the score
 var highscore = 0;  // the high score
 var lives = 23;  // ships left
@@ -52,8 +51,6 @@ var fireKey;
 var infoText;
 var attack_speed = 5;
 var scoreText;
-var playKey;
-var scoreText;
 var hiscoreText;
 var levelText;
 var livesText;
@@ -64,3 +61,4 @@ var gameOverText;
 var gameOverText2;
 var gameOverText3;
 var localStorageName = "sneakers";
+var cursors;

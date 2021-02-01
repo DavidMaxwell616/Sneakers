@@ -1,4 +1,4 @@
-var game = new Phaser.Game(640,
+var game = new Phaser.Game(800,
   480,
   Phaser.AUTO,
   'phaser-example',
@@ -9,12 +9,11 @@ const width = game.width-50;
 function create() {
   game.physics.startSystem(Phaser.Physics.ARCADE);
   game.stage.backgroundColor = '#000000';
-  player = game.add.sprite(width / 2, game.height - 70, 'player');
-  player.xv = 0;
-  player.state = ALIVE;
+  player = game.add.sprite(width / 2, game.height - 82, 'player');
+  game.physics.enable(player, Phaser.Physics.ARCADE);
   var background = this.add.image(0, 0, 'background');
   background.width = this.game.width;
-  background.height = this.game.height-6;
+  background.height = this.game.height-18;
 
   var style = { font: "72px Arial", fill: '#ff0000', align: "center" };
   introText = game.add.text(width / 2, game.height / 3, "SNEAKERS", style);
@@ -30,458 +29,134 @@ function create() {
   });
   introText2.anchor.set(0.5);
   introText2.visible = false;
-
   
   infoText = game.add.text(width / 2, game.height / 2, "", {
-      font: "32px Arial",
-      fill: "#ff0000",
-      align: "center"
-  });
-  infoText.anchor.set(0.5);
-  infoText.visible = false;
+    font: "32px Arial",
+    fill: "#ff0000",
+    align: "center"
+});
+infoText.anchor.set(0.5);
+infoText.visible = false;
 
-  Init_Laser();
+Init_Enemies();
 
-  Init_Enemies();
-
-  Init_Bursts();
-  leftArrow = game.add.button(55, game.world.height+15, 'scrambles', leftClick, this, 2, 1, 0);
-  leftArrow.frame = 2;
-  leftArrow.angle=-90;
-  rightArrow = game.add.button(55, game.world.height-35, 'scrambles', rightClick, this, 2, 1, 0);
-  rightArrow.frame = 2;
-  rightArrow.angle=-270;
-  leftKey = game.input.keyboard.addKey(Phaser.Keyboard.LEFT);
-  rightKey = game.input.keyboard.addKey(Phaser.Keyboard.RIGHT);
-  fireKey = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
-  playKey = game.input.keyboard.addKey(Phaser.Keyboard.P);
-  game.input.onDown.add(Fire, this);
-  highScore = localStorage.getItem(localStorageName) == null ? 0 :
-            localStorage.getItem(localStorageName);
-  Draw_Info();
-}
-
-function leftClick(){
-  player.xv = 8;
-}
-
-function rightClick(){
-  player.xv = -8;
-
-}
-
-function Init_Enemies() {
-switch (Level) {
-  case 1:
-    for (var enemy = 0; enemy <= sneakers_active; enemy++) {
-      var sneaker = game.add.sprite(game.width / 2, game.height / 2, 'sneakers');
-      if (enemy < sneakers_active / 2) {
-        sneaker.animations.add('bluesneaker', game.math.numberArray(0, 3));
-        sneaker.animations.play('bluesneaker', 10,true);
-      }
-      else {
-        sneaker.animations.add('yellowsneaker', game.math.numberArray(4, 7));
-        sneaker.animations.play('yellowsneaker',10, true);
-      }
-      sneaker.xv = (game.rnd.integerInRange(1,2) * attack_speed);
-      sneaker.yv = (game.rnd.integerInRange(1, 2) * attack_speed);
-      sneaker.x = game.rnd.integerInRange(0,500);
-      sneaker.y = game.rnd.integerInRange(0, 140);
-      sneaker.anchor.set(0.5);
-      sneaker.value = 50;
-      sneakers.push(sneaker);
-  }
-    
-    break;
-    case 2:
-   //CREATE CYCLOPS
-   for (enemy = 0; enemy <= cyclops_active; enemy++) {
-    var cyclop = game.add.sprite(game.width / 2, game.height - 60, 'cyclops');
-    if (enemy < cyclops_active / 2) {
-        cyclop.animations.add('bluecyclops', game.math.numberArray(0, 3));
-        cyclop.animations.play('bluecyclops', 10,true);
-      }
-    else {
-        cyclop.animations.add('yellowcyclops', game.math.numberArray(4, 7));
-        cyclops.animations.play('yellowcyclops', 10,true);
-    }
-    cyclop.xv=attack_speed;
-    cyclop.value = 100;
-        cyclop.anchor.set(0.5);
-    cyclops.push(cyclops);
-  }
-  cyclops[0].x = 250; cyclops[0].y = 100;
-  cyclops[1].x = 200; cyclops[1].y = 150;
-  cyclops[2].x = 300; cyclops[2].y = 150;
-  cyclops[3].x = 150; cyclops[3].y = 200;
-  cyclops[4].x = 200; cyclops[4].y = 200;
-  cyclops[5].x = 250; cyclops[5].y = 200;
-  cyclops[6].x = 300; cyclops[6].y = 200;
-  cyclops[7].x = 350; cyclops[7].y = 200;
-  cyclops[8].x = 400; cyclops[8].y = 200;
-      break;
-      case 3:
-  //CREATE SAUCERS
-  for (enemy = 0; enemy <= saucers_active; enemy++) {
-    var saucer = game.add.sprite(game.width / 2, game.height - 60, 'saucers');
-    saucer.frame = game.rnd.integerInRange(0, 2);
-    saucer.anchor.set(0.5);
-    if (enemy >= MAX_SAUCERS / 2)
-    saucer.xv = attack_speed;
-    else
-    saucer.xv = -attack_speed;
-    saucer.x = game.rnd.integerInRange(1,game.width - 100);
-    saucer.y = game.rnd.integerInRange(0,140);
-    saucer.yv = attack_speed - 3;
-    saucer.value = 200;
-    saucers.push(saucer);
-  }
-      break;
-  case 4:
-  //CREATE FANGS
-  for (enemy = 0; enemy <= fangs_active; enemy++) {
-    var fang = game.add.sprite(game.width / 2, game.height - 60, 'fangs');
-    fang.frame = game.rnd.integerInRange(0, 2);
-    fang.anchor.set(0.5);
-    fang.xv = -attack_speed;
-    fang.yv = attack_speed;
-    fangs.push(fang);
-  } 
-  fangs[0].x = 450; fangs[0].y = 50;
-  fangs[1].x = 375; fangs[1].y = 50;
-  fangs[2].x = 300; fangs[2].y = 50;
-  fangs[3].x = 225; fangs[3].y = 50;
-  fangs[4].x = 435; fangs[4].y = 100;
-  fangs[5].x = 335; fangs[5].y = 100;
-  fangs[6].x = 240; fangs[6].y = 100;
-  fangs[7].x = 335; fangs[7].y = 150;
-      break;
-    case 5:
-    //CREATE HWINGS
-    for (enemy = 0; enemy <= hwings_active; enemy++) {
-      var hwing = game.add.sprite(game.width / 2, game.height - 60, 'hwings');
-      hwing.frame = game.rnd.integerInRange(0, 2);
-      hwing.anchor.set(0.5);
-      hwing.x = game.rnd.integerInRange(1,game.width - 100);
-      hwing.y = game.rnd.integerInRange(1,140);
-      hwing.x = game.rnd.integerInRange(1,game.width - 100);
-      hwing.x = game.rnd.integerInRange(1,140);
-      if (enemy < MAX_HWINGS / 2)
-      hwing.xv = attack_speed;
-      else
-      hwing.xv = -attack_speed;
-      hwing.yv = attack_speed;
-      hwing.value = 300;
-      hwings.push(hwing);
-    }
+cursors = game.input.keyboard.createCursorKeys();
+fireKey = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
   
-  break;
-  case 6:
-  //CREATE METEORS
-  for (enemy = 0; enemy <= meteors_active; enemy++) {
-    var meteor = game.add.sprite(game.width / 2, game.height - 60, 'meteors');
-    meteor.anchor.set(0.5);
-    meteor.animations.add('meteors', game.math.numberArray(0, 7));
-    meteor.animations.play('meteors', 10, true);
-    meteor.x = game.rnd.integerInRange(1,game.width - 100);
-    meteor.y = game.rnd.integerInRange(1,240);
-    meteor.yv = attack_speed;
-    meteors.push(meteor);
-    meteor.value = 300;
-  }
 
-  break;
-  case 7:
-  //CREATE SCRAMBLES
-  for (enemy = 0; enemy <= scrambles_active; enemy++) {
-    var scramble = game.add.sprite(game.width / 2, game.height - 60, 'scrambles');
-    scramble.frame = game.rnd.integerInRange(0, 2);
-    scramble.anchor.set(0.5);
-    scramble.x = enemy * 50;
-      scramble.y = enemy * 50;
-      scramble.yv = attack_speed + 3;
-      scramble.xv = attack_speed + 3;
-      scramble.value = 300;
-      scrambles.add(scramble);
-}
-            
-  default:
-    break;
+leftArrow = game.add.sprite(25, game.world.height-20, 'scrambles');
+leftArrow.anchor.set(0.5);
+leftArrow.frame = 2;
+leftArrow.angle=-270;
+leftArrow.inputEnabled = true;
+leftArrow.events.onInputDown.add(moveLeft, this);
+rightArrow = game.add.sprite(35, game.world.height+4, 'scrambles');
+rightArrow.frame = 2;
+rightArrow.angle=-90;
+rightArrow.inputEnabled = true;
+rightArrow.events.onInputDown.add(moveRight, this);
+game.input.onDown.add(Fire, this);
+
+highScore = localStorage.getItem(localStorageName) == null ? 0 :
+          localStorage.getItem(localStorageName);
+Draw_Info();
 }
 
+function Draw_Info() {
+  var format={
+    font: "18px Arial",
+    fill: "#ff0000",
+    align: "left"
+};
+    var score = "SCORE: " + player_score;
+    var hiscore = "HIGH SCORE: " + highscore;
+    var level  = "LEVEL: " + (Level + levelGroup) ;
+    var men = "SHIPS: " + lives;
+    scoreText = game.add.text(width *.05, 20, score, format);      
+    hiscoreText = game.add.text(width *.25, 20, hiscore, format);
+    levelText = game.add.text(width *.55, 20, level, format);
+    livesText = game.add.text(width *.75, 20, men, format);
 } 
 
+function Start_Burst(x, y, xv, yv) {
+  var burst = game.add.sprite(game.width / 2, game.height - 10, 'burst');
+  var anim = burst.animations.add('burst');
+  anim.onComplete.add(burst_finished, this);
+  burst.width = 68 + game.rnd.integerInRange(1,12);
+  burst.height = 54 + game.rnd.integerInRange(1,10);
+  burst.x = x;
+  burst.y = y;
+  burst.xv = xv;
+  burst.yv = yv;
+  burst.animations.play('burst', false);
+} 
 
-function Init_Laser() {
- enemy_lasers.forEach(enemy_laser => {
-  enemy_laser = game.add.sprite(game.width / 2, game.height - 10, 'enemy_laser');
-   
- });
+function pad(num, size) {
+  var s = num + "";
+  while (s.length < size) s = "0" + s;
+  return s;
 }
 
-function Init_Bursts() {
-  bursts.forEach(burst => {
-    burst = game.add.sprite(game.width / 2, game.height - 10, 'burst');
-          var anim = burst.animations.add('burst');
-          anim.onComplete.add(burst_finished, this);
-      });
-  } 
+function Update_Info(){
+  var format={
+    font: "18px Arial",
+    fill: "#ff0000",
+    align: "left"
+};
+    var score = "SCORE: " + player_score;
+    var hiscore = "HIGH SCORE: " + highscore;
+    var level  = "LEVEL: " + (Level + levelGroup) ;
+    var men = "SHIPS: " + lives;
+    scoreText.setText(score);      
+    hiscoreText.setText(hiscore);
+    levelText.setText(level);
+    livesText.setText(men);
+}
 
-  function update() {
-    if (!gameStart) {
-
-          introText.scale.x = introTextSize;
-          introText.scale.y = introTextSize;
-
-          if (introTextSize < 1)
-              introTextSize += .05;
-          else {
-              introText2.visible = true;
-          }
-           if (fireKey.isDown) {
-              introText.visible = false;
-              introText2.visible = false;
-              gameStart = true;
-          }
-      }
-      else {
-
-          if (showintro < 60) {
-              infoText.visible = true;
-              if (Level == 1) {
-                  for (i = 0; i < sneakers_active; i++)
-                      sneakers[i].visible = true;
-              }
-              Do_Intro();
-              showintro++;
-          }
-          else {
-              // only process player if alive
-              if (player.state == ALIVE) {
-
-                  // test if player is moving
-                  if (rightKey.isDown) {
-                      // move player to right
-                      player.xv = 8;
-
-                  } 
-                  else
-                      if (leftKey.isDown) {
-                          // move player to left
-                          player.xv = -8;
-
-                      } 
-
-                  player.x+=player.xv;
-
-                  // test if player is firing
-                  if (fireKey.isDown && !isFiring ){
-                      isFiring = true;
-                      Fire_Laser(player.x, player.y - 5, 16);
-                  }
-
-                  if (player.x < 10)
-                      player.x = 10;
-                  else
-                      if (player.x > (game.width - 100))
-                          player.x = (game.width - 100);
-
-                  // test for dying state transition
-                  if (player.damage >= 100) {
-                      // kill player
-                      player.visible = false;
-                      player.state = DEAD;
-                      lives--;
-                      // set counter to 0
-                      player.counter = 0;
-                  } 
-
-              } 
-              else {
-                  // player is dead
-                  if (game.rnd.integerInRange(1,4) == 1 && player.counter < 60)
-                      Start_Burst(player.x - 16 + game.rnd.integerInRange(1,40), player.y - 5 + game.rnd.integerInRange(1,8),
-                                  -4 + game.rnd.integerInRange(1,8), 2 + game.rnd.integerInRange(1,4));
-
-                  if (++player.counter > 60 && lives > 0) {
-                      // set state to ready
-                      player.state = ALIVE;
-                      player.x = game.width / 2;
-                      player.y = game.height - 70;
-                      ready_state = 1;
-                      ready_counter = 0;
-                      // set position
-                      player.damage = 0;
-                      // stop the intro if not already
-                      player.visible = true;
-                  } 
-              } 
-
-              //GAME OVER ?
-              if (player.state == DEAD && lives == 0 && !gameOver) {
-                 localStorage.setItem(localStorageName, highScore);
-                 // player is dead
-                  gameOver = true
-                  ready_state = 1;
-                  gameOverText = game.add.text(game.width *.3, game.height / 2, "G A M E    O V E R", {
-                      font: "32px Arial",
-                      fill: "#ff0000",
-                      align: "center"
-                  });
-                  // draw text
-                  gameOverText2 = game.add.text(game.width *.3, (game.height / 2) + 50, "Hit Escape to Exit", {
-                      font: "32px Arial",
-                      fill: "#ff0000",
-                      align: "center"
-                  });
-                  gameOverText3 = game.add.text(game.width *.3, (game.height / 2) + 100, "Or P to Play Again", {
-                      font: "32px Arial",
-                      fill: "#ff0000",
-                      align: "center"
-                  });
-
-              } 
-
-              switch (Level) {
-                case 1:
-                  if (sneakers.length==0) {
-                    sneakers_active++;
-                    Level = 2;
-                    Init_Enemies(Level);
-                    showintro = 0;
-                }
-                  break;
-              case 2:
-                if (cyclops.length==0) {
-                  Level = 3;
-                  Init_Enemies(Level);
-                  showintro = 0;
-              }
-              break;
-              case 3:
-                if (saucers.length==0) {
-                  Level = 4;
-                  showintro = 0;
-                  Init_Enemies(Level);
-              }
-              break;
-              case 4:
-                if (fangs.length==0) {
-                  Level = 5;
-                  showintro = 0;
-                  Init_Enemies(Level);
-              }
-              break;
-              case 5:
-                if (hwings.length==0) {
-                  hwings_active++;
-                  Level = 6;
-                  Init_Enemies(Level);
-                  showintro = 0;
-              }
-              break;
-              case 6:
-                meteors_active++;
-                Level = 7;
-                Init_Enemies(Level);
-                showintro = 0;
+function Do_Intro() {
+    var info = "LEVEL: " + (Level+levelGroup) + '\n';
+    switch (Level) {
+        case 1:
+            info += "SNEAKERS";
             break;
-              case 7:
-                scrambles_active++;
-                lives++,
-                Level = 1;
-                attack_speed++;
-                showintro = 0;
-                Init_Enemies(Level);
-                levelGroup += 7;
+        case 2:
+            info += "CYCLOPS";
             break;
-                                            
-                default:
-                  break;
-              }
-
-              // check of user is trying to start over
-              if (playKey.isDown && ready_state == 1 && lives == 0) {
-                gameOver = false;player.xv=0;
-                gameOverText.destroy(); gameOverText2.destroy(); gameOverText3.destroy(); 
-                  Level = 1; attack_speed = 5; showintro = 0; levelGroup = 0;
-                  sneakers_active = 5; cyclops_active = 8;
-                  saucers_active = 8; fangs_active = 8; hwings_active = 5;
-                  meteors_active = 16; scrambles_active = 5; enemy_laser_active = 6;
-                  player.state = ALIVE; player_score = 0; 
-                  player.visible = true; player.x = game.width/2;
-                  lives = 3; player.damage = 0;
-              }
-
-              if (player_score > highscore) highscore = player_score;
-
-              if(isFiring){
-                laser.y += laser.yv;
-                  if (laser.y < -50) {
-                    isFiring = false;
-                      laser.destroy();
-                  }
-                }
-
-              Move_Enemies();
-              
-              Update_Info();
-           }
-      }
-  }
-
-  function Fire(){
+        case 3:
+            info += "SAUCERS";
+            break;
+        case 4:
+            info += "FANGS";
+            break;
+        case 5:
+            info += "HWINGS";
+            break;
+        case 6:
+            info += "METEORS";
+            break;
+        case 7:
+            info += "SCRAMBLE";
+        default:
+    }
+    infoText.setText(info);
+    infoText.visible = showintro < 59;
+}
+function Fire(){
   if(!gameStart){
-  introText.visible = false;
+  introText.
+  visible = false;
   introText2.visible = false;
   gameStart = true;
 }
 else{
   var y = game.input.activePointer.position.y;
-  if(y<game.height-20)
-  Fire_Laser(player.x, player.y - 5, 16);
+  if(y<game.height-20 && !isFiring)
+    Fire_Laser(player.x, player.y - 5, 16);
 }
 }
-  function burst_finished(sprite, animation) {
-      sprite.destroy();
-  }
-
-  function Collision_Test(bodyA, bodyB) {
-      // this function tests if the two rects overlap
-      var x1 = bodyA.x;
-      var y1 = bodyA.y;
-      var w1 = bodyA.width;
-      var h1 = bodyA.height;
-      var x2 = bodyB.x;
-      var y2 = bodyB.y;
-      var w2 = bodyB.width;
-      var h2 = bodyB.height;
-      // get the radi of each rect
-      var width1 = (w1 >> 1) - (w1 >> 3);
-      var height1 = (h1 >> 1) - (h1 >> 3);
-
-      var width2 = (w2 >> 1) - (w2 >> 3);
-      var height2 = (h2 >> 1) - (h2 >> 3);
-
-      // compute center of each rect
-      var cx1 = x1 + width1;
-      var cy1 = y1 + height1;
-
-      var cx2 = x2 + width2;
-      var cy2 = y2 + height2;
-
-      // compute deltas
-      var dx = Math.abs(cx2 - cx1);
-      var dy = Math.abs(cy2 - cy1);
-
-      // test if rects overlap
-      if (dx < (width1 + width2) && dy < (height1 + height2))
-          return true;
-      else
-          // else no collision
-          return false;
-
-  } 
+function burst_finished(sprite, animation) {
+  //  sprite.destroy();
+}
 
 function TouchFire(){
   if(!gameStart)
@@ -492,101 +167,429 @@ function TouchFire(){
   }
 }
 
-function HandleCollision(bodyA, bodyB)
-{
-  // test for collision 
-    if (Collision_Test(bodyA, bodyB)) {
-  Start_Burst(bodyA.x - 10, bodyA.y - 20, 
-    bodyB.xv >> 1, bodyB.yv >> 1);
+function Init_Enemy_Lasers() {
+  enemy_lasers.forEach(enemy_laser => {
+   enemy_laser = game.add.sprite(game.width / 2, game.height - 10, 'enemy_laser');
+   game.physics.enable(enemy_laser, Phaser.Physics.ARCADE);
+      
+  });
+ }
 
-    bodyA.destroy();
-    isFiring = false;
-    bodyB.destroy();
-    player_score += bodyB.value;
+function Init_Enemies() {
+  switch (Level) {
+    case 1:
+      for (var enemy = 0; enemy <= sneakers_active; enemy++) {
+        var sneaker = game.add.sprite(game.width / 2, game.height / 2, 'sneakers');
+        game.physics.enable(sneaker, Phaser.Physics.ARCADE);
+        if (enemy < sneakers_active / 2) {
+          var anim = sneaker.animations.add('bluesneaker', [0,1,2,3], 10, true);
+        anim.play();
+        }
+        else {
+          var anim = sneaker.animations.add('yellowneaker', [4,5,6,7], 10, true);
+          anim.play();
+        }
+        sneaker.xv = (game.rnd.integerInRange(1,2) * attack_speed);
+        sneaker.yv = (game.rnd.integerInRange(1, 2) * attack_speed);
+        sneaker.x = game.rnd.integerInRange(0,500);
+        sneaker.y = game.rnd.integerInRange(0, 140);
+        sneaker.anchor.set(0.5);
+        sneaker.value = 50;
+        game.physics.arcade.enable([player, sneaker]);
+        sneaker.body.onCollide.add(Start_Burst, this);
+        sneakers.push(sneaker);
+    }
+      
+      break;
+      case 2:
+     //CREATE CYCLOPS
+     for (enemy = 0; enemy <= cyclops_active; enemy++) {
+      var cyclop = game.add.sprite(game.width / 2, game.height - 60, 'cyclops');
+      game.physics.enable(cyclop, Phaser.Physics.ARCADE);
+      if (enemy < cyclops_active / 2) {
+        var anim = cyclop.animations.add('bluecyclops', [0,1,2,3], 10, true);
+        anim.play();
+          }
+      else {
+        var anim = cyclop.animations.add('yellowcyclops', [4,5,6,7], 10, true);
+        anim.play();
+      }
+      cyclop.xv=attack_speed;
+      cyclop.value = 100;
+          cyclop.anchor.set(0.5);
+      cyclops.push(cyclops);
+    }
+    cyclops[0].x = 250; cyclops[0].y = 100;
+    cyclops[1].x = 200; cyclops[1].y = 150;
+    cyclops[2].x = 300; cyclops[2].y = 150;
+    cyclops[3].x = 150; cyclops[3].y = 200;
+    cyclops[4].x = 200; cyclops[4].y = 200;
+    cyclops[5].x = 250; cyclops[5].y = 200;
+    cyclops[6].x = 300; cyclops[6].y = 200;
+    cyclops[7].x = 350; cyclops[7].y = 200;
+    cyclops[8].x = 400; cyclops[8].y = 200;
+        break;
+        case 3:
+    //CREATE SAUCERS
+    for (enemy = 0; enemy <= saucers_active; enemy++) {
+      var saucer = game.add.sprite(game.width / 2, game.height - 60, 'saucers');
+      game.physics.enable(saucer, Phaser.Physics.ARCADE);
+      saucer.frame = game.rnd.integerInRange(0, 2);
+      saucer.anchor.set(0.5);
+      if (enemy >= MAX_SAUCERS / 2)
+      saucer.xv = attack_speed;
+      else
+      saucer.xv = -attack_speed;
+      saucer.x = game.rnd.integerInRange(1,game.width - 100);
+      saucer.y = game.rnd.integerInRange(0,140);
+      saucer.yv = attack_speed - 3;
+      saucer.value = 200;
+      saucers.push(saucer);
+    }
+        break;
+    case 4:
+    //CREATE FANGS
+    for (enemy = 0; enemy <= fangs_active; enemy++) {
+      var fang = game.add.sprite(game.width / 2, game.height - 60, 'fangs');
+      game.physics.enable(fang, Phaser.Physics.ARCADE);
+      fang.frame = game.rnd.integerInRange(0, 2);
+      fang.anchor.set(0.5);
+      fang.xv = -attack_speed;
+      fang.yv = attack_speed;
+      fangs.push(fang);
+    } 
+    fangs[0].x = 450; fangs[0].y = 50;
+    fangs[1].x = 375; fangs[1].y = 50;
+    fangs[2].x = 300; fangs[2].y = 50;
+    fangs[3].x = 225; fangs[3].y = 50;
+    fangs[4].x = 435; fangs[4].y = 100;
+    fangs[5].x = 335; fangs[5].y = 100;
+    fangs[6].x = 240; fangs[6].y = 100;
+    fangs[7].x = 335; fangs[7].y = 150;
+        break;
+      case 5:
+      //CREATE HWINGS
+      for (enemy = 0; enemy <= hwings_active; enemy++) {
+        var hwing = game.add.sprite(game.width / 2, game.height - 60, 'hwings');
+        game.physics.enable(hwing, Phaser.Physics.ARCADE);
+        hwing.frame = game.rnd.integerInRange(0, 2);
+        hwing.anchor.set(0.5);
+        hwing.x = game.rnd.integerInRange(1,game.width - 100);
+        hwing.y = game.rnd.integerInRange(1,140);
+        hwing.x = game.rnd.integerInRange(1,game.width - 100);
+        hwing.x = game.rnd.integerInRange(1,140);
+        if (enemy < MAX_HWINGS / 2)
+        hwing.xv = attack_speed;
+        else
+        hwing.xv = -attack_speed;
+        hwing.yv = attack_speed;
+        hwing.value = 300;
+        hwings.push(hwing);
+      }
+    
+    break;
+    case 6:
+    //CREATE METEORS
+    for (enemy = 0; enemy <= meteors_active; enemy++) {
+      var meteor = game.add.sprite(game.width / 2, game.height - 60, 'meteors');
+      game.physics.enable(meteor, Phaser.Physics.ARCADE);
+      meteor.anchor.set(0.5);
+      meteor.animations.add('meteors', [0,1,2,3,4,5,6,7], 10, true);
+      meteor.animations.play('meteors');
+      meteor.x = game.rnd.integerInRange(1,game.width - 100);
+      meteor.y = game.rnd.integerInRange(1,240);
+      meteor.yv = attack_speed;
+      meteors.push(meteor);
+      meteor.value = 300;
+    }
+  
+    break;
+    case 7:
+    //CREATE SCRAMBLES
+    for (enemy = 0; enemy <= scrambles_active; enemy++) {
+      var scramble = game.add.sprite(game.width / 2, game.height - 60, 'scrambles');
+      game.physics.enable(scramble, Phaser.Physics.ARCADE);
+      scramble.frame = game.rnd.integerInRange(0, 2);
+      scramble.anchor.set(0.5);
+      scramble.x = enemy * 50;
+        scramble.y = enemy * 50;
+        scramble.yv = attack_speed + 3;
+        scramble.xv = attack_speed + 3;
+        scramble.value = 300;
+        scrambles.add(scramble);
+  }
+              
+    default:
+      break;
+  }
+  
   } 
-}
+  
+function Init_Enemy_Lasers() {
+  enemy_lasers.forEach(enemy_laser => {
+   enemy_laser = game.add.sprite(game.width / 2, game.height - 10, 'enemy_laser');
+   game.physics.enable(enemy_laser, Phaser.Physics.ARCADE);
+      
+  });
+ }
 
+ function moveLeft(){
+  if(player.x>10)
+  player.x -= 4;
+ }
 
+ function moveRight(){
+  if(player.x<game.width-100)
+  player.x += 4;
+ }
+
+ function update() {
  
+  if (!gameStart) {
+
+    introText.scale.x = introTextSize;
+    introText.scale.y = introTextSize;
+
+    if (introTextSize < 1)
+        introTextSize += .05;
+    else {
+        introText2.visible = true;
+    }
+     if (fireKey.isDown) {
+        introText.visible = false;
+        introText2.visible = false;
+        gameStart = true;
+    }
+}
+else {
+    if (showintro < 60) {
+        infoText.visible = true;
+        if (Level == 1) {
+            for (i = 0; i < sneakers_active; i++)
+                sneakers[i].visible = true;
+        }
+        Do_Intro();
+        showintro++;
+    }
+    else {
+        // only process player if alive
+        if (player.visible) {
+
+          if (cursors.left.isDown)
+          {
+            moveLeft();
+          }
+          else if (cursors.right.isDown)
+          {
+            moveRight();
+          }
+        
+                   // test if player is firing
+            if (fireKey.isDown && !isFiring ){
+                isFiring = true;
+                Fire_Laser(player.x, player.y - 5, 16);
+            }
+
+            // test for dying state transition
+            if (player.damage >= 100) {
+                // kill player
+                player.visible = false;
+                player.state = DEAD;
+                lives--;
+                // set counter to 0
+                player.counter = 0;
+            } 
+
+        } 
+        else {
+            // player is dead
+            if (game.rnd.integerInRange(1,4) == 1 && player.counter < 60)
+                Start_Burst(player.x - 16 + game.rnd.integerInRange(1,40), player.y - 5 + game.rnd.integerInRange(1,8),
+                            -4 + game.rnd.integerInRange(1,8), 2 + game.rnd.integerInRange(1,4));
+
+            if (++player.counter > 60 && lives > 0) {
+                // set state to ready
+                player.state = ALIVE;
+                player.x = game.width / 2;
+                player.y = game.height - 70;
+                ready_state = 1;
+                ready_counter = 0;
+                // set position
+                player.damage = 0;
+                // stop the intro if not already
+                player.visible = true;
+            } 
+        } 
+
+        //GAME OVER ?
+        if (player.state == DEAD && lives == 0 && !gameOver) {
+           localStorage.setItem(localStorageName, highScore);
+           // player is dead
+            gameOver = true
+            ready_state = 1;
+            gameOverText = game.add.text(game.width *.3, game.height / 2, "G A M E    O V E R", {
+                font: "32px Arial",
+                fill: "#ff0000",
+                align: "center"
+            });
+            // draw text
+            gameOverText2 = game.add.text(game.width *.3, (game.height / 2) + 50, "Hit Escape to Exit", {
+                font: "32px Arial",
+                fill: "#ff0000",
+                align: "center"
+            });
+            gameOverText3 = game.add.text(game.width *.3, (game.height / 2) + 100, "Or P to Play Again", {
+                font: "32px Arial",
+                fill: "#ff0000",
+                align: "center"
+            });
+
+        } 
+
+        switch (Level) {
+          case 1:
+            if (sneakers.length==0) {
+              sneakers_active++;
+              Level = 2;
+              Init_Enemies(Level);
+              showintro = 0;
+          }
+            break;
+        case 2:
+          if (cyclops.length==0) {
+            Level = 3;
+            Init_Enemies(Level);
+            showintro = 0;
+        }
+        break;
+        case 3:
+          if (saucers.length==0) {
+            Level = 4;
+            showintro = 0;
+            Init_Enemies(Level);
+        }
+        break;
+        case 4:
+          if (fangs.length==0) {
+            Level = 5;
+            showintro = 0;
+            Init_Enemies(Level);
+        }
+        break;
+        case 5:
+          if (hwings.length==0) {
+            hwings_active++;
+            Level = 6;
+            Init_Enemies(Level);
+            showintro = 0;
+        }
+        break;
+        case 6:
+          meteors_active++;
+          Level = 7;
+          Init_Enemies(Level);
+          showintro = 0;
+      break;
+        case 7:
+          scrambles_active++;
+          lives++,
+          Level = 1;
+          attack_speed++;
+          showintro = 0;
+          Init_Enemies(Level);
+          levelGroup += 7;
+      break;
+                                      
+          default:
+            break;
+        }
+
+        // check of user is trying to start over
+        // if (playKey.isDown && ready_state == 1 && lives == 0) {
+        //   gameOver = false;player.xv=0;
+        //   gameOverText.destroy(); gameOverText2.destroy(); gameOverText3.destroy(); 
+        //     Level = 1; attack_speed = 5; showintro = 0; levelGroup = 0;
+        //     sneakers_active = 5; cyclops_active = 8;
+        //     saucers_active = 8; fangs_active = 8; hwings_active = 5;
+        //     meteors_active = 16; scrambles_active = 5; enemy_laser_active = 6;
+        //     player.state = ALIVE; player_score = 0; 
+        //     player.visible = true; player.x = game.width/2;
+        //     lives = 3; player.damage = 0;
+        // }
+
+        if (player_score > highscore) highscore = player_score;
+
+        if(isFiring){
+          laser.y += laser.yv;
+            if (laser.y < -50) {
+              isFiring = false;
+                laser.destroy();
+            }
+          }
+
+        Move_Enemies();
+        
+        Update_Info();
+     }
+}
 
 //COLLISIONS
 
+if(laser!=null){
+
 switch (Level) {
-  case 1:
-    sneakers.forEach(enemy => {
-      Handle_Collision(burst,enemy);
-    });
-  break;
-  case 2:
-      //COLLISION WITH CYCLOPS
-      cyclops.forEach(enemy => {
-        Handle_Collision(burst,enemy);
-      });
-  break;
-  case 3:
-      saucers.forEach(enemy => {
-        Handle_Collision(burst,enemy);
-      }); 
-  break;
-  case 4:
-      //COLLISION WITH FANGS
-    fangs.forEach(enemy => {
-      Handle_Collision(burst,enemy);
-    });
-  break;
-  case 5:
-  //COLLISION WITH HWINGS
-    hwings.forEach(enemy => {
-      Handle_Collision(burst,enemy);
-    }); 
-  break;
-  case 6:
-  //COLLISION WITH METEORS
-    meteors.forEach(enemy => {
-      Handle_Collision(burst,enemy);
-    });
-  break;
-  case 7:
-  //COLLISION WITH SCRAMBLES
-  fangs.forEach(enemy => {
-    Handle_Collision(burst,enemy);
-    });                                    
-    break;
-    default:
-  break;
+case 1:
+sneakers.forEach(enemy => {
+HandleCollision(laser,enemy);
+});
+break;
+case 2:
+//COLLISION WITH CYCLOPS
+cyclops.forEach(enemy => {
+  HandleCollision(laser,enemy);
+});
+break;
+case 3:
+saucers.forEach(enemy => {
+  HandleCollision(laser,enemy);
+}); 
+break;
+case 4:
+//COLLISION WITH FANGS
+fangs.forEach(enemy => {
+HandleCollision(laser,enemy);
+});
+break;
+case 5:
+//COLLISION WITH HWINGS
+hwings.forEach(enemy => {
+HandleCollision(laser,enemy);
+}); 
+break;
+case 6:
+//COLLISION WITH METEORS
+meteors.forEach(enemy => {
+HandleCollision(laser,enemy);
+});
+break;
+case 7:
+//COLLISION WITH SCRAMBLES
+fangs.forEach(enemy => {
+HandleCollision(laser,enemy);
+});                                    
+break;
+default:
+break;
+}
+  }
+
 }
 
-//MOVE ENEMY LASER
-enemy_lasers.forEach(enemy_laser => {
-        // move the pulse downward
-        //Move_Laser(enemy_laser);
-        enemy_laser.y += enemy_laser.yv;
-        // test for boundaries
-        if (enemy_laser.y > player.y) {
-            // kill the pulse
-            enemy_laser.destroy();
-        } 
-      
-        // test for collision with player
-        if (Collision_Test(enemy_laser, player) && player.state == ALIVE) {
-            Start_Burst(enemy_laser.x, enemy_laser.y,
-                    enemy_laser.xv >> 1, enemy_laser.yv >> 1);
-
-            // update players damage
-            player.damage += 100;
-
-
-            // kill the original
-            enemy_laser.destroy();
-
-        } 
-
-  
-});
 
 
   function Fire_Laser(x, y, vel) {
     laser = game.add.sprite(x, y, 'laser');
+    game.physics.enable(laser, Phaser.Physics.ARCADE);
     laser.yv = -vel;
     isFiring = true;
   } 
@@ -601,7 +604,19 @@ enemy_lasers.forEach(enemy_laser => {
       });
   }
  
-
+  // function HandleCollision(bodyA, bodyB)
+  // {
+  //   // test for collision 
+  //   Start_Burst(bodyA.x - 10, bodyA.y - 20, 
+  //     bodyB.xv >> 1, bodyB.yv >> 1);
+  
+  //     bodyA.destroy();
+  //     isFiring = false;
+  //     bodyB.destroy();
+  //     player_score += bodyB.value;
+  // }
+  
+  
 
   function Move_Enemies() {
       // this function moves all the enemies pulses and checks for
@@ -617,23 +632,23 @@ switch (Level) {
     }
     if (sneaker.y > game.height - 70 || sneaker.y < 10) {
         sneaker.yv *= -1;
-        sneaker.xv = game.rnd.integerInRange(1,5);;
+        sneaker.xv = game.rnd.integerInRange(1,5);
     }
     // move the enemy
-    sneaker.x += sneaker.xv;
-    sneaker.y += sneaker.yv;
+   sneaker.x += sneaker.xv;
+   sneaker.y += sneaker.yv;
+
       // test for collision with enemies
-    if (Collision_Test(player, sneaker) && player.state == ALIVE) {
-        Start_Burst(sneaker.x, sneaker.y,
-        sneaker.xv >> 1, sneaker.yv >> 1);
-          // update players damage
-          player.damage += 100;
+        // Start_Burst(sneaker.x, sneaker.y,
+        // sneaker.xv >> 1, sneaker.yv >> 1);
+        //   // update players damage
+        //   player.damage += 100;
 
-          // update score
-          player_score += sneaker.value;
+        //   // update score
+        //   player_score += sneaker.value;
 
-          sneaker.destroy();
-        }
+        //   sneaker.destroy();
+        // }
   });
     case 2:
       cyclops.forEach(cyclop => {
@@ -649,13 +664,11 @@ switch (Level) {
             cyclop.x += cyclop.xv;
 
             // test for collision with enemies
-            if (Collision_Test(player, cyclop)) {
-                Start_Burst(cyclop.x, cyclop.y,
-                            cyclop.xv >> 1, cyclop.yv >> 1);
-                // update players damage
-                player.damage += 100;
-                cyclop.destroy();
-            } 
+                // Start_Burst(cyclop.x, cyclop.y,
+                //             cyclop.xv >> 1, cyclop.yv >> 1);
+                // // update players damage
+                // player.damage += 100;
+                // cyclop.destroy();
           });
 
     break;
@@ -692,14 +705,12 @@ switch (Level) {
                   Fire_Enemy_Laser(fang.x, fang.y, attack_speed + 5);
 
               // test for collision with enemies
-              if (Collision_Test(player, fang) && player.state == ALIVE) {
-                  Start_Burst(fang.x, fang.y,
-                              fang.xv >> 1, fang.yv >> 1);
+                  // Start_Burst(fang.x, fang.y,
+                  //             fang.xv >> 1, fang.yv >> 1);
 
-                  // update players damage
-                  player.damage += 100;
-                  fang.destroy();
-          }
+                  // // update players damage
+                  // player.damage += 100;
+                  // fang.destroy();
         }); 
     break;
     case 5:
@@ -714,15 +725,13 @@ switch (Level) {
 
 
         // test for collision with enemies
-        if (Collision_Test(player, hwing) && player.state == ALIVE) {
-            Start_Burst(hwing.x, hwing.y,
-                        hwing.xv >> 1, hwing.yv >> 1);
+            // Start_Burst(hwing.x, hwing.y,
+            //             hwing.xv >> 1, hwing.yv >> 1);
 
-            // update players damage
-            player_damage += 100;
-            Initialize_Enemy_Positions();
-            hwings_killed = 0;
-        } // end if collision
+            // // update players damage
+            // player_damage += 100;
+            // Initialize_Enemy_Positions();
+            // hwings_killed = 0;
 
 
     }); // end for index
@@ -740,14 +749,11 @@ switch (Level) {
             meteor.y += meteor.yv;
 
             // test for collision with enemies
-            if (Collision_Test(player, meteor) && player.state == ALIVE) {
-                Start_Burst(meteor.x, meteor.y,
-                              meteor.xv >> 1, meteor.yv >> 1);
+                // Start_Burst(meteor.x, meteor.y,
+                //               meteor.xv >> 1, meteor.yv >> 1);
 
-                // update players damage
-                player.damage += 100;
-
-        }
+                // // update players damage
+                // player.damage += 100;
 
     });
     break;
@@ -763,17 +769,15 @@ switch (Level) {
             scramble.y += scramble.yv;
 
             // test for collision with enemies
-            if (Collision_Test(player, scramble)) {
-                Start_Burst(scramble.x, scramble.y,
-                             scramble.xv >> 1, scramble.yv >> 1);
+                // Start_Burst(scramble.x, scramble.y,
+                //              scramble.xv >> 1, scramble.yv >> 1);
 
-                // update players damage
-                player.damage += 100;
-                Initialize_Enemy_Positions();
+                // // update players damage
+                // player.damage += 100;
+                // Initialize_Enemy_Positions();
 
 
-        }
-
+  
         if (scramble.state == RETREATING) {
 
             if (scramble.y < 10) {
@@ -795,89 +799,32 @@ switch (Level) {
                               
   default:
     break;
+//MOVE ENEMY LASER
+enemy_lasers.forEach(enemy_laser => {
+  // move the pulse downward
+  //Move_Laser(enemy_laser);
+  enemy_laser.y += enemy_laser.yv;
+  // test for boundaries
+  if (enemy_laser.y > player.y) {
+      // kill the pulse
+      enemy_laser.destroy();
+  } 
+
+  // // test for collision with player
+  //     Start_Burst(enemy_laser.x, enemy_laser.y,
+  //             enemy_laser.xv >> 1, enemy_laser.yv >> 1);
+
+  //     // update players damage
+  //     player.damage += 100;
+
+
+  //     // kill the original
+  //     enemy_laser.destroy();
+
+
+
+});
 }
-  }
- 
-    
-  function Start_Burst(x, y, xv, yv) {
-    bursts.forEach(burst => {
-              burst.curr_frame = 0;
-              burst.width = 68 + game.rnd.integerInRange(1,12);
-              burst.height = 54 + game.rnd.integerInRange(1,10);
-              burst.x = x;
-              burst.y = y;
-              burst.xv = xv;
-              burst.yv = yv;
-              burst.animations.play('burst', false);
-              return;
-          }); 
-  } 
-  
-  function pad(num, size) {
-      var s = num + "";
-      while (s.length < size) s = "0" + s;
-      return s;
-  }
-
-  function Draw_Info() {
-    var format={
-      font: "18px Arial",
-      fill: "#ff0000",
-      align: "left"
-  };
-      var score = "SCORE: " + player_score;
-      var hiscore = "HIGH SCORE: " + highscore;
-      var level  = "LEVEL: " + (Level + levelGroup) ;
-      var men = "SHIPS: " + lives;
-      scoreText = game.add.text(width *.05, 20, score, format);      
-      hiscoreText = game.add.text(width *.25, 20, hiscore, format);
-      levelText = game.add.text(width *.55, 20, level, format);
-      livesText = game.add.text(width *.75, 20, men, format);
-  } 
-
-  function Update_Info(){
-    var format={
-      font: "18px Arial",
-      fill: "#ff0000",
-      align: "left"
-  };
-      var score = "SCORE: " + player_score;
-      var hiscore = "HIGH SCORE: " + highscore;
-      var level  = "LEVEL: " + (Level + levelGroup) ;
-      var men = "SHIPS: " + lives;
-      scoreText.setText(score);      
-      hiscoreText.setText(hiscore);
-      levelText.setText(level);
-      livesText.setText(men);
-  }
-
-  function Do_Intro() {
-      var info = "LEVEL: " + (Level+levelGroup) + '\n';
-      switch (Level) {
-          case 1:
-              info += "SNEAKERS";
-              break;
-          case 2:
-              info += "CYCLOPS";
-              break;
-          case 3:
-              info += "SAUCERS";
-              break;
-          case 4:
-              info += "FANGS";
-              break;
-          case 5:
-              info += "HWINGS";
-              break;
-          case 6:
-              info += "METEORS";
-              break;
-          case 7:
-              info += "SCRAMBLE";
-          default:
-      }
-      infoText.setText(info);
-      infoText.visible = showintro < 59;
   }
 
 
