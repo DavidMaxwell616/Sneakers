@@ -43,8 +43,7 @@ fangmovey=0;
 var player_score = 0;  // the score
 var highscore = 0;  // the high score
 var lives = 23;  // ships left
-var player_damage = 0;  // damage of player
-var player_counter = 0;  // used for state transition tracking
+var ready_state = 0;
 var leftKey;
 var rightKey;
 var fireKey;
