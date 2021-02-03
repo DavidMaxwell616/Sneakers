@@ -27,7 +27,7 @@ var laser;
 var showintro = 0;
 var bursts = [];    // the explosion bursts
 var isFiring;
-var Level = 1;
+var Level = 7;
 var levelGroup = 0;
 var sneakers_active = 5, 
     cyclops_active = 8, 

@@ -79,6 +79,14 @@ function Draw_Info() {
 } 
 
 function Start_Burst(sprite1, sprite2) {
+  if(sprite1.key=='scrambles' && game.rnd.integerInRange(1,10)<5)
+  { 
+    sprite1.state = RETREATING;
+    sprite1.angle=-180;
+    player_score+=sprite1.value;
+    sprite2.destroy();
+  return;
+  }
   var burst = game.add.sprite(game.width / 2, game.height - 10, 'burst');
   burst.anchor.set(0.5);
   var anim = burst.animations.add('burst');
@@ -163,8 +171,10 @@ function Fire(){
 }
 else{
   var y = game.input.activePointer.position.y;
-  if(y<game.height-20 && !isFiring)
+  if(y<game.height-70 && !isFiring){
+    isFiring = true;
     Fire_Laser(player.x, player.y - 5, 16);
+  }
 }
 }
 
@@ -177,13 +187,6 @@ function TouchFire(){
   }
 }
 
-function Init_Enemy_Lasers() {
-  enemy_lasers.forEach(enemy_laser => {
-   enemy_laser = game.add.sprite(game.width / 2, game.height - 10, 'enemy_laser');
-   game.physics.enable(enemy_laser, Phaser.Physics.ARCADE);
-      
-  });
- }
 
 function Init_Enemies() {
   switch (Level) {
@@ -200,8 +203,8 @@ function Init_Enemies() {
         }
         sneaker.xv = (game.rnd.integerInRange(1,2) * attack_speed);
         sneaker.yv = (game.rnd.integerInRange(1, 2) * attack_speed);
-        sneaker.x = game.rnd.integerInRange(0,500);
-        sneaker.y = game.rnd.integerInRange(0, 140);
+        sneaker.x = game.rnd.integerInRange(20,game.width-100);
+        sneaker.y = game.rnd.integerInRange(20, 140);
         sneaker.anchor.set(0.5);
         sneaker.value = 50;
         sneaker.alive = true;
@@ -227,11 +230,12 @@ function Init_Enemies() {
       }
       cyclop.xv=attack_speed;
       cyclop.value = 100;
-          cyclop.anchor.set(0.5);
+      cyclop.alive = true;
+      cyclop.anchor.set(0.5);
           game.physics.arcade.enable([cyclop,player]);
           cyclop.body.onCollide = new Phaser.Signal();
           cyclop.body.onCollide.add(Start_Burst,this);
-           cyclops.push(cyclops);
+           cyclops.push(cyclop);
     }
     cyclops[0].x = 250; cyclops[0].y = 100;
     cyclops[1].x = 200; cyclops[1].y = 150;
@@ -242,15 +246,15 @@ function Init_Enemies() {
     cyclops[6].x = 300; cyclops[6].y = 200;
     cyclops[7].x = 350; cyclops[7].y = 200;
     cyclops[8].x = 400; cyclops[8].y = 200;
-        break;
-        case 3:
+    break;
+    case 3:
     //CREATE SAUCERS
     for (enemy = 0; enemy <= saucers_active; enemy++) {
       var saucer = game.add.sprite(game.width / 2, game.height - 60, 'saucers');
       game.physics.enable(saucer, Phaser.Physics.ARCADE);
       saucer.frame = game.rnd.integerInRange(0, 2);
       saucer.anchor.set(0.5);
-      if (enemy >= MAX_SAUCERS / 2)
+      if (enemy >= saucers_active / 2)
       saucer.xv = attack_speed;
       else
       saucer.xv = -attack_speed;
@@ -258,6 +262,9 @@ function Init_Enemies() {
       saucer.y = game.rnd.integerInRange(0,140);
       saucer.yv = attack_speed - 3;
       saucer.value = 200;
+      game.physics.arcade.enable([saucer,player]);
+      saucer.body.onCollide = new Phaser.Signal();
+      saucer.body.onCollide.add(Start_Burst,this);
       saucers.push(saucer);
     }
         break;
@@ -270,6 +277,9 @@ function Init_Enemies() {
       fang.anchor.set(0.5);
       fang.xv = -attack_speed;
       fang.yv = attack_speed;
+      game.physics.arcade.enable([fang,player]);
+      fang.body.onCollide = new Phaser.Signal();
+      fang.body.onCollide.add(Start_Burst,this);
       fangs.push(fang);
     } 
     fangs[0].x = 450; fangs[0].y = 50;
@@ -292,13 +302,16 @@ function Init_Enemies() {
         hwing.y = game.rnd.integerInRange(1,140);
         hwing.x = game.rnd.integerInRange(1,game.width - 100);
         hwing.x = game.rnd.integerInRange(1,140);
-        if (enemy < MAX_HWINGS / 2)
+        if (enemy < hwings_active / 2)
         hwing.xv = attack_speed;
         else
         hwing.xv = -attack_speed;
         hwing.yv = attack_speed;
         hwing.value = 300;
-        hwings.push(hwing);
+        game.physics.arcade.enable([hwing,player]);
+        hwing.body.onCollide = new Phaser.Signal();
+        hwing.body.onCollide.add(Start_Burst,this);
+          hwings.push(hwing);
       }
     
     break;
@@ -313,6 +326,9 @@ function Init_Enemies() {
       meteor.x = game.rnd.integerInRange(1,game.width - 100);
       meteor.y = game.rnd.integerInRange(1,240);
       meteor.yv = attack_speed;
+      game.physics.arcade.enable([meteor,player]);
+      meteor.body.onCollide = new Phaser.Signal();
+      meteor.body.onCollide.add(Start_Burst,this);
       meteors.push(meteor);
       meteor.value = 300;
     }
@@ -330,7 +346,11 @@ function Init_Enemies() {
         scramble.yv = attack_speed + 3;
         scramble.xv = attack_speed + 3;
         scramble.value = 300;
-        scrambles.add(scramble);
+        game.physics.arcade.enable([scramble,player]);
+        scramble.body.onCollide = new Phaser.Signal();
+        scramble.body.onCollide.add(Start_Burst,this);
+        scramble.state = ALIVE;
+        scrambles.push(scramble);
   }
               
     default:
@@ -338,14 +358,7 @@ function Init_Enemies() {
   }
   
   } 
-  
-function Init_Enemy_Lasers() {
-  enemy_lasers.forEach(enemy_laser => {
-   enemy_laser = game.add.sprite(game.width / 2, game.height - 10, 'enemy_laser');
-   game.physics.enable(enemy_laser, Phaser.Physics.ARCADE);
-      
-  });
- }
+
 
  function moveLeft(){
   if(player.x>10)
@@ -358,8 +371,7 @@ function Init_Enemy_Lasers() {
  }
 
  function update() {
- 
-  if (!gameStart) {
+   if (!gameStart) {
 
     introText.scale.x = introTextSize;
     introText.scale.y = introTextSize;
@@ -514,8 +526,7 @@ else {
         sneakers_active = 5; cyclops_active = 8;
         saucers_active = 8; fangs_active = 8; hwings_active = 5;
         meteors_active = 16; scrambles_active = 5; enemy_laser_active = 6;
-        player.state = ALIVE; player_score = 0; 
-        player.visible = true; player.x = game.width/2;
+        player_score = 0; player.visible = true; player.x = game.width/2;
         lives = 3; 
     }
 
@@ -529,9 +540,12 @@ else {
             }
           }
 
+      if(gameStart && showintro>59)  
+      {
         Move_Enemies();
         
         Update_Info();
+      }
      }
 
 
@@ -558,6 +572,9 @@ switch (Level) {
     game.physics.arcade.collide(player, enemy);
     game.physics.arcade.collide(laser, enemy);
   }); 
+  enemy_lasers.forEach(enemy_laser => {
+    game.physics.arcade.collide(player, enemy_laser);
+  }); 
   break;
   case 4:
   //COLLISION WITH FANGS
@@ -565,6 +582,9 @@ switch (Level) {
     game.physics.arcade.collide(player, enemy);
     game.physics.arcade.collide(laser, enemy);
   });
+  enemy_lasers.forEach(enemy_laser => {
+    game.physics.arcade.collide(player, enemy_laser);
+  }); 
   break;
   case 5:
   //COLLISION WITH HWINGS
@@ -582,7 +602,7 @@ switch (Level) {
   break;
   case 7:
   //COLLISION WITH SCRAMBLES
-  fangs.forEach(enemy => {
+  scrambles.forEach(enemy => {
     game.physics.arcade.collide(player, enemy);
     game.physics.arcade.collide(laser, enemy);
   });                                    
@@ -591,7 +611,7 @@ switch (Level) {
   break;
   }
 }
-
+ }
 
 
 
@@ -604,13 +624,14 @@ switch (Level) {
   } 
 
   function Fire_Enemy_Laser(x, y, vel) {
-      enemy_lasers.forEach(enemy_laser => {
-        enemy_laser.x = x;
-        enemy_laser.y = y;
+   var enemy_laser = game.add.sprite(x, y, 'enemy_laser');
+   game.physics.enable(enemy_laser, Phaser.Physics.ARCADE);
         enemy_laser.yv = vel;
-        return;
-
-      });
+        game.physics.arcade.enable([enemy_laser,player]);
+        enemy_laser.body.onCollide = new Phaser.Signal();
+        enemy_laser.body.onCollide.add(Start_Burst,this);
+  
+        enemy_lasers.push(enemy_laser);
   }
 
   function Move_Enemies() {
@@ -620,11 +641,11 @@ switch (Level) {
     // test if enemies pulse is in flight
     if (sneaker.x > game.width - 100 || sneaker.x < 10) {
       sneaker.xv *= -1;
-      sneaker.yv = game.rnd.integerInRange(1,5);
+      sneaker.yv = game.rnd.integerInRange(-5,5);
     }
     if (sneaker.y > game.height - 70 || sneaker.y < 10) {
       sneaker.yv *= -1;
-      sneaker.xv = game.rnd.integerInRange(1,5);
+      sneaker.xv = game.rnd.integerInRange(-5,5);
     }
     // move the enemy
     sneaker.x += sneaker.xv;
@@ -647,13 +668,14 @@ switch (Level) {
     break;
     case 3:
     saucers.forEach(saucer => {
-                if (saucer.x > game.width - 100) saucer.x = 10;
-                if (saucer.x < 10) saucer.x = game.width - 101;
+                if (saucer.x > game.width - 100) saucer.x = 20;
+                if (saucer.x < 20) saucer.x = game.width - 101;
                 if (saucer.y > game.height - 200) saucer.yv = -saucer.yv;
-                if (saucer.y < 10) saucer.yv = -saucer.yv;
+                if (saucer.y < 20) saucer.yv = -saucer.yv;
                 saucer.x += saucer.xv;
                 saucer.y += saucer.yv;
-                if (game.rnd.integerInRange(1,100 - levelGroup) == 1 && player.state == ALIVE)
+                if (game.rnd.integerInRange(1,100 - levelGroup) == 1 && player.x>saucer.x-50 
+                && player.x<saucer.x+50  &&player.visible)
                     Fire_Enemy_Laser(saucer.x, saucer.y, attack_speed + 5);
             } );
     break;
@@ -672,8 +694,9 @@ switch (Level) {
             if (fangmovey > 10) fang.yv = -5;
             fang.x += fang.xv;
             fang.y += fang.yv;
-            if (game.rnd.integerInRange(1,90 - levelGroup) == 1 && player.state == ALIVE)
-                Fire_Enemy_Laser(fang.x, fang.y, attack_speed + 5);
+            if (game.rnd.integerInRange(1,100 - levelGroup) == 1 && player.x>fang.x-50 
+            && player.x<fang.x+50  && player.visible)
+           Fire_Enemy_Laser(fang.x, fang.y, attack_speed + 5);
       }); 
     break;
     case 5:
@@ -704,23 +727,20 @@ switch (Level) {
           if (scramble.x > game.width - 100) scramble.x = 10;
           if (scramble.x < 10) scramble.x = game.width - 100;
 
-          scramble.x += scramble.xv;
-          scramble.y += scramble.yv;
 
       if (scramble.state == RETREATING) {
-
-          if (scramble.y < 10) {
-              scramble.destroy();
-
+      scramble.yv*=-1;
+        if (scramble.y < 20) {
+          scramble.angle=0;
+          scramble.yv*=-1;
+              scramble.state = ALIVE;
           }
-          scramble.yv = -5;
-          scramble.xv = 0;
           if (game.rnd.integerInRange(1, 100) == 1) {
               scramble.frame-=3;
           }
-          scramble.x += scramble.xv;
-          scramble.y += scramble.yv;
       } 
+      scramble.x += scramble.xv;
+      scramble.y += scramble.yv;
 
     });
 
@@ -732,11 +752,11 @@ switch (Level) {
   //MOVE ENEMY LASER
   enemy_lasers.forEach(enemy_laser => {
     enemy_laser.y += enemy_laser.yv;
-    if (enemy_laser.y > player.y) {
+    if (enemy_laser.y > player.y+20) {
         enemy_laser.destroy();
     } 
 
   });
 }
 
- }
+ 

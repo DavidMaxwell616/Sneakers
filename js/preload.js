@@ -7,7 +7,7 @@ function preload() {
   game.load.spritesheet('saucers', 'assets/images/saucers.png', 50, 25);
   game.load.spritesheet('fangs', 'assets/images/fangs.png', 44, 28);
   game.load.spritesheet('hwings', 'assets/images/hwings.png', 41, 37);
-  game.load.spritesheet('meteors', 'assets/images/meteors.png', 56, 58);
+  game.load.spritesheet('meteors', 'assets/images/meteors.png', 54, 48);
   game.load.spritesheet('scrambles', 'assets/images/scrambles.png',50,50);
   game.load.spritesheet('burst', 'assets/images/burst.png', 40, 43);
   game.load.image('laser', 'assets/images/laser.png');
