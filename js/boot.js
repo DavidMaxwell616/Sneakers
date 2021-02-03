@@ -27,7 +27,7 @@ var laser;
 var showintro = 0;
 var bursts = [];    // the explosion bursts
 var isFiring;
-var Level = 7;
+var Level = 1;
 var levelGroup = 0;
 var sneakers_active = 5, 
     cyclops_active = 8, 
@@ -42,7 +42,7 @@ var fangmovex=0;
 fangmovey=0;
 var player_score = 0;  // the score
 var highscore = 0;  // the high score
-var lives = 23;  // ships left
+var lives = 3;  // ships left
 var ready_state = 0;
 var leftKey;
 var rightKey;
