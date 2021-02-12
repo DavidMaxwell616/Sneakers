@@ -39,7 +39,7 @@ var sneakers_active = 5,
     enemy_laser_active = 6;
 
 var fangmovex=0; 
-fangmovey=0;
+var fangmovey=0;
 var player_score = 0;  // the score
 var highscore = 0;  // the high score
 var lives = 3;  // ships left
@@ -61,3 +61,7 @@ var gameOverText2;
 var gameOverText3;
 var localStorageName = "sneakers";
 var cursors;
+var moveright = false;
+var moveleft = false;
+var leftArrow;
+var rightArrow;

@@ -49,12 +49,25 @@ leftArrow.anchor.set(0.5);
 leftArrow.frame = 2;
 leftArrow.angle=-270;
 leftArrow.inputEnabled = true;
-leftArrow.events.onInputDown.add(moveLeft, this);
-rightArrow = game.add.sprite(35, game.world.height+4, 'scrambles');
+leftArrow.events.onInputDown.add(function () {
+  moveleft = true;
+});
+leftArrow.events.onInputUp.add(function () {
+  moveleft = false;
+});
+
+rightArrow = game.add.sprite(game.world.width-80, game.world.height-20, 'scrambles');
+rightArrow.anchor.set(0.5);
 rightArrow.frame = 2;
 rightArrow.angle=-90;
 rightArrow.inputEnabled = true;
-rightArrow.events.onInputDown.add(moveRight, this);
+rightArrow.events.onInputDown.add(function () {
+  moveleft = true;
+});
+rightArrow.events.onInputUp.add(function () {
+  moveleft = false;
+});
+
 game.input.onDown.add(Fire, this);
 
 highScore = localStorage.getItem(localStorageName) == null ? 0 :
@@ -398,11 +411,11 @@ else {
         showintro++;
     }
     else {
-          if (cursors.left.isDown)
+          if (cursors.left.isDown || moveleft)
           {
             moveLeft();
           }
-          else if (cursors.right.isDown)
+          else if (cursors.right.isDown || moveright)
           {
             moveRight();
           }
