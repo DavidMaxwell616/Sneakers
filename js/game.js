@@ -62,10 +62,10 @@ rightArrow.frame = 2;
 rightArrow.angle=-90;
 rightArrow.inputEnabled = true;
 rightArrow.events.onInputDown.add(function () {
-  moveleft = true;
+  moveright = true;
 });
 rightArrow.events.onInputUp.add(function () {
-  moveleft = false;
+  moveright = false;
 });
 
 game.input.onDown.add(Fire, this);
@@ -115,7 +115,7 @@ function Start_Burst(sprite1, sprite2) {
     lives--;
     ready_state = 1;
     showintro = 0;
-    sprite2.visible = true;
+    sprite2.visible = false;
     sprite2.x = width/2;
   }
   else
@@ -186,7 +186,7 @@ else{
   var y = game.input.activePointer.position.y;
   if(y<game.height-70 && !isFiring){
     isFiring = true;
-    Fire_Laser(player.x, player.y - 5, 16);
+    Fire_Laser(player.x+15, player.y - 5, 16);
   }
 }
 }
@@ -401,7 +401,7 @@ function Init_Enemies() {
     }
 }
 else {
-    if (showintro < 60) {
+    if (showintro < 60 && !gameOver) {
         infoText.visible = true;
         if (Level == 1) {
             for (i = 0; i < sneakers_active; i++)
@@ -411,6 +411,10 @@ else {
         showintro++;
     }
     else {
+          player.visible = true;
+          if(!gameOver)
+          { 
+
           if (cursors.left.isDown || moveleft)
           {
             moveLeft();
@@ -419,132 +423,17 @@ else {
           {
             moveRight();
           }
-        
+
+          Move_Enemies();
+            
+         Update_Info();
         // test if player is firing
         if (fireKey.isDown && !isFiring ){
             isFiring = true;
-            Fire_Laser(player.x, player.y - 5, 16);
+            Fire_Laser(player.x+15, player.y - 5, 16);
         }
-
-        } 
-            // if (lives > 0) {
-            //     // set state to ready
-            //     player.x = game.width / 2;
-            //     player.y = game.height - 70;
-            //     ready_state = 1;
-            //     ready_counter = 0;
-            //     // stop the intro if not already
-            //     player.visible = true;
-            // } 
- 
-        //GAME OVER ?
-        if (lives == 0 && !gameOver) {
-           localStorage.setItem(localStorageName, highScore);
-           // player is dead
-            gameOver = true
-            ready_state = 1;
-            gameOverText = game.add.text(game.width *.3, game.height / 2, "G A M E    O V E R", {
-                font: "32px Arial",
-                fill: "#ff0000",
-                align: "center"
-            });
-            // draw text
-            gameOverText2 = game.add.text(game.width *.3, (game.height / 2) + 50, "Hit Escape to Exit", {
-                font: "32px Arial",
-                fill: "#ff0000",
-                align: "center"
-            });
-            gameOverText3 = game.add.text(game.width *.3, (game.height / 2) + 100, "Or P to Play Again", {
-                font: "32px Arial",
-                fill: "#ff0000",
-                align: "center"
-            });
-
-        } 
-
-        switch (Level) {
-          case 1:
-            var enemiesLeft = sneakers.filter(x => x.alive).length;
-            if (enemiesLeft==0) {
-              sneakers_active++;
-              Level = 2;
-              Init_Enemies(Level);
-              showintro = 0;
-           }
-            break;
-        case 2:
-          enemiesLeft = cyclops.filter(x => x.alive).length;
-          if (enemiesLeft==0) {
-            Level = 3;
-            Init_Enemies(Level);
-            showintro = 0;
-        }
-        break;
-        case 3:
-          enemiesLeft = saucers.filter(x => x.alive).length;
-          if (enemiesLeft==0) {
-            Level = 4;
-            showintro = 0;
-            Init_Enemies(Level);
-        }
-        break;
-        case 4:
-          enemiesLeft = fangs.filter(x => x.alive).length;
-          if (enemiesLeft==0) {
-            Level = 5;
-            showintro = 0;
-            Init_Enemies(Level);
-        }
-        break;
-        case 5:
-          enemiesLeft = hwings.filter(x => x.alive).length;
-          if (enemiesLeft==0) {
-            hwings_active++;
-            Level = 6;
-            Init_Enemies(Level);
-            showintro = 0;
-        }
-        break;
-        case 6:
-          enemiesLeft = meteors.filter(x => x.alive).length;
-          if (enemiesLeft==0) {
-         meteors_active++;
-          Level = 7;
-          Init_Enemies(Level);
-          showintro = 0;
-          }
-      break;
-        case 7:
-          enemiesLeft = scrambles.filter(x => x.alive).length;
-          if (enemiesLeft==0) {
-          scrambles_active++;
-          lives++,
-          Level = 1;
-          attack_speed++;
-          showintro = 0;
-          Init_Enemies(Level);
-          levelGroup += 7;
-                }
-          break;
-                                      
-          default:
-            break;
-        }
-
-     //   check if user is trying to start over
-    if (isFiring && ready_state == 1 && lives == 0) {
-      gameOver = false;player.xv=0;
-      gameOverText.destroy(); gameOverText2.destroy(); gameOverText3.destroy(); 
-        Level = 1; attack_speed = 5; showintro = 0; levelGroup = 0;
-        sneakers_active = 5; cyclops_active = 8;
-        saucers_active = 8; fangs_active = 8; hwings_active = 5;
-        meteors_active = 16; scrambles_active = 5; enemy_laser_active = 6;
-        player_score = 0; player.visible = true; player.x = game.width/2;
-        lives = 3; 
-    }
-
-        if (player_score > highscore) highscore = player_score;
-
+        CollisionCheck();
+        LevelAdvanceCheck();
         if(isFiring){
           laser.y += laser.yv;
             if (laser.y < -50) {
@@ -553,81 +442,219 @@ else {
             }
           }
 
-      if(gameStart && showintro>59)  
-      {
-        Move_Enemies();
-        
-        Update_Info();
+        } 
+        else
+        { 
+          //   check if user is trying to start over
+          if (isFiring) {
+            gameOver = false;player.xv=0;
+            gameOverText.destroy(); gameOverText2.destroy(); gameOverText3.destroy(); 
+              Level = 1; attack_speed = 5; showintro = 0; levelGroup = 0;
+              sneakers_active = 5; cyclops_active = 8;
+              saucers_active = 8; fangs_active = 8; hwings_active = 5;
+              meteors_active = 16; scrambles_active = 5; enemy_laser_active = 6;
+              player_score = 0; player.visible = true; player.x = game.width/2;
+              lives = 3; Clear_Enemies();Init_Enemies();
+          }
+        }
       }
+
+        GameOverCheck();
+
+        if (player_score > highscore) highscore = player_score;
+
+        }
+ 
      }
 
-
-//COLLISIONS
-
-if(laser!=null){
-
-switch (Level) {
-  case 1:
-    sneakers.forEach(enemy => {
-      game.physics.arcade.collide(player, enemy);
-      game.physics.arcade.collide(laser, enemy);
-      });
-  break;
-  case 2:
-  //COLLISION WITH CYCLOPS
-  cyclops.forEach(enemy => {
-    game.physics.arcade.collide(player, enemy);
-    game.physics.arcade.collide(laser, enemy);
+ function Clear_Enemies(){
+  sneakers.forEach(element => {
+    element.destroy();
   });
-  break;
-  case 3:
-  saucers.forEach(enemy => {
-    game.physics.arcade.collide(player, enemy);
-    game.physics.arcade.collide(laser, enemy);
-  }); 
-  enemy_lasers.forEach(enemy_laser => {
-    game.physics.arcade.collide(player, enemy_laser);
-  }); 
-  break;
-  case 4:
-  //COLLISION WITH FANGS
-  fangs.forEach(enemy => {
-    game.physics.arcade.collide(player, enemy);
-    game.physics.arcade.collide(laser, enemy);
+  saucers.forEach(element => {
+    element.destroy();
   });
-  enemy_lasers.forEach(enemy_laser => {
-    game.physics.arcade.collide(player, enemy_laser);
-  }); 
-  break;
-  case 5:
-  //COLLISION WITH HWINGS
-  hwings.forEach(enemy => {
-    game.physics.arcade.collide(player, enemy);
-    game.physics.arcade.collide(laser, enemy);
-  }); 
-  break;
-  case 6:
-  //COLLISION WITH METEORS
-  meteors.forEach(enemy => {
-    game.physics.arcade.collide(player, enemy);
-    game.physics.arcade.collide(laser, enemy);
+  fangs.forEach(element => {
+    element.destroy();
   });
-  break;
-  case 7:
-  //COLLISION WITH SCRAMBLES
-  scrambles.forEach(enemy => {
-    game.physics.arcade.collide(player, enemy);
-    game.physics.arcade.collide(laser, enemy);
-  });                                    
-  break;
-  default:
-  break;
-  }
-}
+  hwings.forEach(element => {
+    element.destroy();
+  });
+  meteors.forEach(element => {
+    element.destroy();
+  });
+  scrambles.forEach(element => {
+    element.destroy();
+  });
+  enemy_lasers.forEach(element => {
+    element.destroy();
+  });
+  laser.destroy();
  }
 
+function LevelAdvanceCheck(){
+    switch (Level) {
+      case 1:
+        var enemiesLeft = sneakers.filter(x => x.alive).length;
+        if (enemiesLeft==0) {
+          sneakers_active++;
+          Level = 2;
+          Init_Enemies(Level);
+          showintro = 0;
+       }
+        break;
+    case 2:
+      enemiesLeft = cyclops.filter(x => x.alive).length;
+      if (enemiesLeft==0) {
+        Level = 3;
+        Init_Enemies(Level);
+        showintro = 0;
+    }
+    break;
+    case 3:
+      enemiesLeft = saucers.filter(x => x.alive).length;
+      if (enemiesLeft==0) {
+        Level = 4;
+        showintro = 0;
+        Init_Enemies(Level);
+    }
+    break;
+    case 4:
+      enemiesLeft = fangs.filter(x => x.alive).length;
+      if (enemiesLeft==0) {
+        Level = 5;
+        showintro = 0;
+        Init_Enemies(Level);
+    }
+    break;
+    case 5:
+      enemiesLeft = hwings.filter(x => x.alive).length;
+      if (enemiesLeft==0) {
+        hwings_active++;
+        Level = 6;
+        Init_Enemies(Level);
+        showintro = 0;
+    }
+    break;
+    case 6:
+      enemiesLeft = meteors.filter(x => x.alive).length;
+      if (enemiesLeft==0) {
+     meteors_active++;
+      Level = 7;
+      Init_Enemies(Level);
+      showintro = 0;
+      }
+  break;
+    case 7:
+      enemiesLeft = scrambles.filter(x => x.alive).length;
+      if (enemiesLeft==0) {
+      scrambles_active++;
+      lives++,
+      Level = 1;
+      attack_speed++;
+      showintro = 0;
+      Init_Enemies(Level);
+      levelGroup += 7;
+            }
+      break;
+                                  
+      default:
+        break;
+    }
+
+}
 
 
+ function CollisionCheck(){
+   //COLLISIONS
+  switch (Level) {
+    case 1:
+      sneakers.forEach(enemy => {
+        game.physics.arcade.collide(player, enemy);
+        game.physics.arcade.collide(laser, enemy);
+        });
+    break;
+    case 2:
+    //COLLISION WITH CYCLOPS
+    cyclops.forEach(enemy => {
+      game.physics.arcade.collide(player, enemy);
+      game.physics.arcade.collide(laser, enemy);
+    });
+    break;
+    case 3:
+    saucers.forEach(enemy => {
+      game.physics.arcade.collide(player, enemy);
+      game.physics.arcade.collide(laser, enemy);
+    }); 
+    enemy_lasers.forEach(enemy_laser => {
+      game.physics.arcade.collide(player, enemy_laser);
+    }); 
+    break;
+    case 4:
+    //COLLISION WITH FANGS
+    fangs.forEach(enemy => {
+      game.physics.arcade.collide(player, enemy);
+      game.physics.arcade.collide(laser, enemy);
+    });
+    enemy_lasers.forEach(enemy_laser => {
+      game.physics.arcade.collide(player, enemy_laser);
+    }); 
+    break;
+    case 5:
+    //COLLISION WITH HWINGS
+    hwings.forEach(enemy => {
+      game.physics.arcade.collide(player, enemy);
+      game.physics.arcade.collide(laser, enemy);
+    }); 
+    break;
+    case 6:
+    //COLLISION WITH METEORS
+    meteors.forEach(enemy => {
+      game.physics.arcade.collide(player, enemy);
+      game.physics.arcade.collide(laser, enemy);
+    });
+    break;
+    case 7:
+    //COLLISION WITH SCRAMBLES
+    scrambles.forEach(enemy => {
+      game.physics.arcade.collide(player, enemy);
+      game.physics.arcade.collide(laser, enemy);
+    });                                    
+    break;
+    default:
+    break;
+    }
+ }
+
+function GameOverCheck(){
+         //GAME OVER ?
+         if (lives <1 && !gameOver) {
+         Update_Info();
+          localStorage.setItem(localStorageName, highScore);
+          // player is dead
+           gameOver = true
+           ready_state = 1;
+           gameOverText = game.add.text(game.width *.3, game.height / 2, "G A M E    O V E R", {
+               font: "32px Arial",
+               fill: "#ff0000",
+               align: "center"
+           });
+           // draw text
+           gameOverText2 = game.add.text(game.width *.3, (game.height / 2) + 50, "Hit Escape to Exit", {
+               font: "32px Arial",
+               fill: "#ff0000",
+               align: "center"
+           });
+           gameOverText3 = game.add.text(game.width *.3, (game.height / 2) + 100, "Or P to Play Again", {
+               font: "32px Arial",
+               fill: "#ff0000",
+               align: "center"
+           });
+
+       } 
+
+ 
+}
 
   function Fire_Laser(x, y, vel) {
     laser = game.add.sprite(x, y, 'laser');
@@ -663,6 +690,18 @@ switch (Level) {
     // move the enemy
     sneaker.x += sneaker.xv;
     sneaker.y += sneaker.yv;
+    if(game.rnd.integerInRange(1,100)<5&& player.x>sneaker.x-50 
+    && player.x<sneaker.x+50)
+      sneaker.xv *= -1;
+    if(game.rnd.integerInRange(1,100)<5&& player.x>sneaker.x-50 
+    && player.x<sneaker.x+50)
+      sneaker.yv *= -1;
+    //sometimes sneakers get stuck outside of game bounds
+    if(sneaker.x<0 || sneaker.x>game.width || sneaker.y<0 || sneaker.y>game.height)
+    {
+      sneaker.x = game.width/2;
+      sneaker.y = game.height/2
+    }
     });
     case 2:
     cyclops.forEach(cyclop => {
@@ -688,7 +727,7 @@ switch (Level) {
                 saucer.x += saucer.xv;
                 saucer.y += saucer.yv;
                 if (game.rnd.integerInRange(1,100 - levelGroup) == 1 && player.x>saucer.x-50 
-                && player.x<saucer.x+50  &&player.visible)
+                && player.x<saucer.x+50  && player.visible && saucer.visible)
                     Fire_Enemy_Laser(saucer.x, saucer.y, attack_speed + 5);
             } );
     break;
@@ -708,7 +747,7 @@ switch (Level) {
             fang.x += fang.xv;
             fang.y += fang.yv;
             if (game.rnd.integerInRange(1,100 - levelGroup) == 1 && player.x>fang.x-50 
-            && player.x<fang.x+50  && player.visible)
+            && player.x<fang.x+50  && player.visible && fang.visible)
            Fire_Enemy_Laser(fang.x, fang.y, attack_speed + 5);
       }); 
     break;
